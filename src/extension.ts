@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 import Config from './config';
 import Consts from './consts';
 import Utils from './utils';
-import Decorators from './decorators';
 import ViewEmbedded from './views/embedded';
 
 /* ACTIVATE */
@@ -21,8 +20,6 @@ const activate = function ( context: vscode.ExtensionContext ) {
   Utils.context = context;
   Utils.folder.initRootsRe ();
   Utils.init.views ();
-
-  Decorators.init(context);
 
   context.subscriptions.push (
     vscode.workspace.onDidChangeConfiguration ( () => Utils.embedded.provider && delete Utils.embedded.provider.filesData ),
