@@ -1,0 +1,8 @@
+.nyc_output
+coverage
+dist
+out
+node_modules
+.vscode-test/
+*.vsix
+.marketplace
