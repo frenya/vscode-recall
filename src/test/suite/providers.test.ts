@@ -11,12 +11,9 @@ import Config from '../../config';
 import Utils from '../../utils';
 import { TaskType } from '../../utils/embedded/providers/abstract';
 
-import expected from '../fixtures/tasks1';
-import expectedBacklog from '../fixtures/tasks2';
+import expectedCards from '../fixtures/tasks2';
 
-console.log(expected);
-
-suite('Embedded task provider', () => {
+suite('Embedded card provider', () => {
 
   let filesData = null;
 	before(async () => {
@@ -27,45 +24,14 @@ suite('Embedded task provider', () => {
     filesData = Utils.embedded.provider.filesData;
 	});
 
-  test('should have task data', () => {
-    // console.log(JSON.stringify(filesData, null, 2));
-    const actual = Utils.embedded.provider.filesData[path.resolve(__dirname, '../../../demo/New Datacenter/2014-10-08 Weekly Meeting.md')];
+  test('cards should be correctly identified', () => {
+    const actual = Utils.embedded.provider.filesData[path.resolve(__dirname, '../../../demo/New Datacenter/Cards Demo.md')];
 
-    assert(actual.length === expected.length);
+    assert.strictEqual(actual.length, expectedCards.length);
 
-    actual.forEach((t: TaskType, i) => {
+    actual.forEach((card, i) => {
       // console.log('Matching', t, 'to', i, expected[i]);
-      sinon.assert.match(t, expected[i]);
-    });
-  });
-
-  test('tasks should have backlinks', () => {
-    const actual = Utils.embedded.provider.filesData[path.resolve(__dirname, '../../../demo/New Datacenter/2014-10-08 Weekly Meeting.md')];
-
-    actual.forEach((t: TaskType) => {
-      assert(!!t.backlinkURL);
-      assert(/^vscode:\/\/file\//.test(t.backlinkURL));
-      assert(t.backlinkURL.indexOf('%2F2014-10-08%20Weekly%20Meeting.md:' + (t.lineNr + 1)) !== -1);
-    });
-  });
-
-  test('backlog tasks should be correctly assigned', () => {
-    const actual = Utils.embedded.provider.filesData[path.resolve(__dirname, '../../../demo/New Datacenter/Backlog.md')];
-
-    /*
-    actual.forEach((t: TaskType) => {
-      assert(!!t.backlinkURL);
-      assert(/^vscode:\/\/file\//.test(t.backlinkURL));
-      assert(t.backlinkURL.indexOf('%2F2014-10-08%20Weekly%20Meeting.md:' + (t.lineNr + 1)) !== -1);
-    });
-    */
-    // console.log(JSON.stringify(actual, null, 2));
-
-    assert.equal(actual.length, expectedBacklog.length);
-
-    actual.forEach((t: TaskType, i) => {
-      // console.log('Matching', t, 'to', i, expected[i]);
-      sinon.assert.match(t, expectedBacklog[i]);
+      sinon.assert.match(card, expectedCards[i]);
     });
   });
 

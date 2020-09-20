@@ -1,0 +1,38 @@
+{
+  "coffeebreak.mentions": {
+    "John": {
+      "fullname": "John Adams",
+      "department": "Networking"
+    },
+    "Doug": {
+      "fullname": "Doug Brown",
+      "department": "IT Operations"
+    },
+    "Anne": {
+      "fullname": "Anne Crowley",
+      "department": "Finance"
+    },
+    "Sean": {
+      "fullname": "Sean Dermot",
+      "department": "UPS Technologies"
+    },
+    "Steve": {
+      "fullname": "Steve Evans",
+      "department": "AC Plus"
+    },
+    "Rich": {
+      "fullname": "Richard Francis",
+      "department": "Project Manager"
+    },
+    "Frank": {
+      "fullname": "Frantisek Vymazal",
+      "email": "frenya@frenya.net"
+    },
+    "<unassigned>": {
+      "email": "*"
+    }
+  },
+  "coffeebreak.sync": {
+    "command": "coffeebreak.showTasks"
+  }
+}

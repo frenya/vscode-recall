@@ -62,7 +62,8 @@ class JS extends Abstract {
     // Get config for the file
     const fileUri = vscode.Uri.file(filePath);
     const config = Config(fileUri);
-    console.log(config);
+    const parsedPath = Folder.parsePath ( filePath );
+    // console.log(config);
 
     // Parse YAML header (if present), split content and metadata
     const result = metadataParser(content);
@@ -99,7 +100,15 @@ class JS extends Abstract {
       }
 
       // Only push the cards that do have two or more pages
-      if (cardPages.length > 1) data.push (cardPages);
+      if (cardPages.length > 1) {
+        data.push ({
+          pages: cardPages,
+          filePath,
+          root: parsedPath.root,
+          rootPath: parsedPath.rootPath,
+          relativePath: parsedPath.relativePath
+        });
+      }
     });
 
     console.log(data);

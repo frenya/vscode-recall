@@ -25,6 +25,7 @@
     "url": "https://github.com/frenya/vscode-recall"
   },
   "contributes": {
+    "commands": [],
     "configuration": {
       "type": "object",
       "title": "Recall",
@@ -71,7 +72,11 @@
           "type": "string",
           "scope": "resource",
           "description": "Default level at which to detect cards in markdown files. Can be overridden in the YAML header (see documentation).",
-          "enum": ["header", "bullet", "ignore"],
+          "enum": [
+            "header",
+            "bullet",
+            "ignore"
+          ],
           "enumDescriptions": [
             "Any header starts a new card",
             "Any header and/or bullet starts a new card",
