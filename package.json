@@ -25,7 +25,12 @@
     "url": "https://github.com/frenya/vscode-recall"
   },
   "contributes": {
-    "commands": [],
+    "commands": [
+      {
+        "command": "recall.startRecall",
+        "title": "Start new test session"
+      }
+    ],
     "configuration": {
       "type": "object",
       "title": "Recall",

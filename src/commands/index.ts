@@ -6,6 +6,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import Utils from '../utils';
+import { open as openWebview } from '../views/webview';
+
+function startRecall () {
+  return openWebview();
+}
+
 
 /**
  * Returns a command url usable in Markdown strings.
@@ -21,5 +27,5 @@ const createCommandUrl = (commandName, ...params) => {
 /* EXPORT */
 
 export {
-  createCommandUrl,
+  createCommandUrl, startRecall,
 };
