@@ -157,6 +157,7 @@
     "lodash": "^4.17.15",
     "markdown-it-regexp": "^0.4.0",
     "markdown-yaml-metadata-parser": "^2.1.1",
+    "md5": "^2.3.0",
     "mkdirp": "^0.5.1",
     "moment": "^2.24.0",
     "pify": "^4.0.1",

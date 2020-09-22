@@ -11,6 +11,7 @@ import File from '../../file';
 import Folder from '../../folder';
 import Abstract, { pathNormalizer, TaskType } from './abstract';
 const metadataParser = require('markdown-yaml-metadata-parser');
+const md5 = require('md5');
 
 /* JS */
 
@@ -101,13 +102,19 @@ class JS extends Abstract {
 
       // Only push the cards that do have two or more pages
       if (cardPages.length > 1) {
-        data.push ({
+        const card = {
           pages: cardPages,
           filePath,
           root: parsedPath.root,
           rootPath: parsedPath.rootPath,
-          relativePath: parsedPath.relativePath
-        });
+          relativePath: parsedPath.relativePath,
+          checksum: md5(cardPages.join('\n')),
+          // TODO: Get this from history
+          nextReviewDate: Date.now(),
+          recall: 1,
+        };
+        data.push(card);
+        this.queue.push(card);
       }
     });
 

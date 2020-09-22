@@ -24,31 +24,49 @@ async function open () {
   const onDiskPath = vscode.Uri.file(path.join(Utils.context.extensionPath, 'src', 'views', 'card.css'));
   const styleSrc = panel.webview.asWebviewUri(onDiskPath);
 
+  // Show loading message
+  // panel.webview.html = await getLoadingMessage(styleSrc);
+
+  await Utils.embedded.initProvider ();
+  let cardProvider = Utils.embedded.provider;
+
+  await cardProvider.get ( undefined, null );
+
+  let currentCard = cardProvider.getNextCard();
+  let pagesShown = 1;
   // And set its HTML content
-  panel.webview.html = await getWebviewContent(styleSrc);
+  panel.webview.html = await getWebviewContent(styleSrc, currentCard);
 
   // Handle messages from the webview
   panel.webview.onDidReceiveMessage(
     message => {
       console.log(message);
-      getWebviewContent(styleSrc).then(html => panel.webview.html = html);
-      /*
-      switch (message.command) {
-        case 'alert':
-          vscode.window.showErrorMessage(message.text);
-          return;
-      }
-      */
+      cardProvider.processReviewResult(currentCard, message === 'remembered');
+
+      currentCard = cardProvider.getNextCard();
+      pagesShown = 1;
+      getWebviewContent(styleSrc, currentCard).then(html => panel.webview.html = html).catch(console.error);
     },
     undefined,
     Utils.context.subscriptions
   );
 
+  panel.onDidDispose(
+    () => {
+      // TODO: Handle onDidDispose properly
+    },
+    null,
+    Utils.context.subscriptions
+  );
+
+  // TODO: Only allow one instance to exist
+  // see https://code.visualstudio.com/api/extension-guides/webview#visibility-and-moving
+
+
   // console.log(onDiskPath, panel.webview.html);
 }
 
-
-async function getWebviewContent(styleSrc) {
+async function getLoadingMessage(styleSrc) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -58,11 +76,31 @@ async function getWebviewContent(styleSrc) {
     <title>Cat Coding</title>
 </head>
 <body>
-    ${await renderCard(demoCard)}
+  <div class="card">
+    <h1>Loading data ...</h1>
+  </div>
+</body>
+</html>`;
+}
+
+
+async function getWebviewContent(styleSrc, card, pagesShown = 1) {
+  console.log('Showing card', card);
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="${styleSrc}">
+    <title>Cat Coding</title>
+</head>
+<body>
+    ${await renderCard(card)}
     <script>
       (function() {
         const vscode = acquireVsCodeApi();
-        addOnClickHandler('remember');
+        addOnClickHandler('remembered');
         addOnClickHandler('forgot');
 
         function onButtonClick(id) {
@@ -104,12 +142,12 @@ async function renderCard (card) {
 
   return `<div class="card">
   <div class="preamble">
-    <span>#123456789</span>
-    <span>3/12</span>
+    <span>Id: ${card.checksum}</span>
+    <span>Recall: ${card.recall}</span>
   </div>
   ${renderedPages.join('\n')}
   <div class="buttons">
-    <a id="remember" href="#" class="btn">Remembered</a>
+    <a id="remembered" href="#" class="btn">Remembered</a>
     <a id="forgot"   href="#" class="btn">Forgot</a>
   </div>
 

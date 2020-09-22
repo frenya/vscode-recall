@@ -70,6 +70,7 @@ class Abstract {
   exclude = undefined;
   rootPaths = undefined;
   filesData = undefined; // { [filePath]: todo[] | undefined }
+  queue = [];
   watcher: vscode.FileSystemWatcher = undefined;
 
   async get ( rootPaths = Folder.getAllRootPaths (), filter ) {
@@ -207,6 +208,20 @@ class Abstract {
 
     return roots.length > 1 ? todos : { '': todos[roots[0]] };
 
+  }
+
+  getNextCard () {
+    const firstCard = _.minBy (this.queue, 'nextReviewDate');
+    return firstCard;
+  }
+
+  processReviewResult (card, success) {
+    card.recall = Math.max(1, card.recall * (success ? 2 : 0.5));
+    card.nextReviewDate = Date.now() + card.recall * 24 * 3600 * 1000;
+    console.log(card);
+
+    // TODO: Log to history
+    // TODO: Round the review date to a day boundary somehow (don't make it exactly 24 hours from NOW)
   }
 
 }
