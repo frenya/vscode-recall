@@ -25,7 +25,7 @@ async function open () {
   const styleSrc = panel.webview.asWebviewUri(onDiskPath);
 
   // Show loading message
-  panel.webview.html = await getLoadingMessage(styleSrc);
+  panel.webview.html = await getWebviewContent(styleSrc, 'Loading ...', null);
 
   await Utils.embedded.initProvider ();
   let cardProvider = Utils.embedded.provider;
@@ -37,16 +37,9 @@ async function open () {
   function showNextCard() {
     currentCard = cardProvider.getNextCard();
     pagesShown = 1;
-    if (currentCard) {
-      getWebviewContent(styleSrc, currentCard)
-        .then(html => panel.webview.html = html)
-        .catch(console.error);
-    }
-    else {
-      getLoadingMessage(styleSrc)
-        .then(html => panel.webview.html = html)
-        .catch(console.error);
-    }
+    getWebviewContent(styleSrc, 'No cards to review. Well done!', currentCard)
+      .then(html => panel.webview.html = html)
+      .catch(console.error);
   }
 
   showNextCard();
@@ -77,25 +70,7 @@ async function open () {
   // console.log(onDiskPath, panel.webview.html);
 }
 
-async function getLoadingMessage(styleSrc) {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="${styleSrc}">
-    <title>Cat Coding</title>
-</head>
-<body>
-  <div class="card">
-    <h1>Loading data ...</h1>
-  </div>
-</body>
-</html>`;
-}
-
-
-async function getWebviewContent(styleSrc, card, pagesShown = 1) {
+async function getWebviewContent(styleSrc, fallbackMessage, card, pagesShown = 1) {
   console.log('Showing card', card);
 
   return `<!DOCTYPE html>
@@ -107,7 +82,9 @@ async function getWebviewContent(styleSrc, card, pagesShown = 1) {
     <title>Cat Coding</title>
 </head>
 <body>
-    ${await renderCard(card)}
+    <div class="container">
+    ${card ? await renderCard(card) : fallbackMessage}
+    </div>
     <script>
       (function() {
         const vscode = acquireVsCodeApi();
@@ -151,11 +128,11 @@ async function renderCard (card) {
     return `<div class="${i ? 'back' : 'front'}">${pageHTML}</div>`;
   }));
 
-  return `<div class="card">
-  <div class="preamble">
+  return `<div class="preamble">
     <span>Id: ${card.checksum}</span>
     <span>Recall: ${card.recall}</span>
   </div>
+  <div class="card">
   ${renderedPages.join('\n')}
   <div class="buttons">
     <a id="remembered" href="#" class="btn">Remembered</a>
