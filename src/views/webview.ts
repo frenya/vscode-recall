@@ -25,27 +25,38 @@ async function open () {
   const styleSrc = panel.webview.asWebviewUri(onDiskPath);
 
   // Show loading message
-  // panel.webview.html = await getLoadingMessage(styleSrc);
+  panel.webview.html = await getLoadingMessage(styleSrc);
 
   await Utils.embedded.initProvider ();
   let cardProvider = Utils.embedded.provider;
 
   await cardProvider.get ( undefined, null );
 
-  let currentCard = cardProvider.getNextCard();
-  let pagesShown = 1;
-  // And set its HTML content
-  panel.webview.html = await getWebviewContent(styleSrc, currentCard);
+  let currentCard = null, pagesShown = 1;
+
+  function showNextCard() {
+    currentCard = cardProvider.getNextCard();
+    pagesShown = 1;
+    if (currentCard) {
+      getWebviewContent(styleSrc, currentCard)
+        .then(html => panel.webview.html = html)
+        .catch(console.error);
+    }
+    else {
+      getLoadingMessage(styleSrc)
+        .then(html => panel.webview.html = html)
+        .catch(console.error);
+    }
+  }
+
+  showNextCard();
 
   // Handle messages from the webview
   panel.webview.onDidReceiveMessage(
     message => {
       console.log(message);
       cardProvider.processReviewResult(currentCard, message === 'remembered');
-
-      currentCard = cardProvider.getNextCard();
-      pagesShown = 1;
-      getWebviewContent(styleSrc, currentCard).then(html => panel.webview.html = html).catch(console.error);
+      showNextCard();
     },
     undefined,
     Utils.context.subscriptions

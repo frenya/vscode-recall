@@ -211,7 +211,7 @@ class Abstract {
   }
 
   getNextCard () {
-    const firstCard = _.minBy (this.queue, 'nextReviewDate');
+    const firstCard = _.minBy (_.filter(this.queue, card => card.nextReviewDate <= Date.now()), 'nextReviewDate');
     return firstCard;
   }
 
