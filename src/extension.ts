@@ -31,6 +31,12 @@ const activate = function ( context: vscode.ExtensionContext ) {
   Utils.init.commands ( context );
 };
 
-/* EXPORT */
+const deactivate = function () {
 
-export {activate};
+  Utils.embedded.provider.history.destructor();
+
+}
+
+  /* EXPORT */
+
+export {activate, deactivate};

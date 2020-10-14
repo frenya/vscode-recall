@@ -152,6 +152,7 @@
   "dependencies": {
     "absolute": "0.0.1",
     "diff": "^3.5.0",
+    "fast-csv": "^4.3.2",
     "find-up": "^3.0.0",
     "globby": "^9.2.0",
     "lodash": "^4.17.15",

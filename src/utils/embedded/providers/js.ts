@@ -55,7 +55,7 @@ class JS extends Abstract {
 
   async getFileData ( filePath ): Promise<TaskType[]> {
 
-    console.log('Parsing file ', filePath);
+    // console.log('Parsing file ', filePath);
 
     let data = [];
     let content = await File.read ( filePath );
@@ -85,6 +85,9 @@ class JS extends Abstract {
     // console.log(matches);
     if ( !matches.length ) return data;
 
+    // Initialize history
+    await this.history.addFolder(parsedPath.rootPath);
+
     matches.forEach ( (match, i) => {
       // console.log('Parsing match', match, match.index, content.length)
       let nextCardStart = i + 1 < matches.length ? matches[i + 1].index : content.length;
@@ -110,9 +113,12 @@ class JS extends Abstract {
           relativePath: parsedPath.relativePath,
           checksum: md5(cardPages.join('\n')),
           // TODO: Get this from history
-          nextReviewDate: Date.now(),
+          nextReviewDate: 0,
           recall: 1,
         };
+
+        this.history.getCardRecall(card);
+
         data.push(card);
         this.queue.push(card);
       }
@@ -120,29 +126,6 @@ class JS extends Abstract {
 
     console.log(data);
     return data;
-
-    // TODO: Check card against history and determine if it's due
-    // TODO: Add additional fields to the card
-    /*
-    let task: TaskType = {
-      todo: match[0],
-      owner: owner || defaultOwner,
-      myself: false,
-      message: match[2],
-      code: line.slice ( 0, line.indexOf ( match[0] ) ),
-      rawLine,
-      line,
-      lineNr,
-      filePath,
-      root: parsedPath.root,
-      rootPath: parsedPath.rootPath,
-      relativePath: parsedPath.relativePath
-    };
-
-    // Add document backlink
-    task.backlinkURL = `vscode://file/${encodeURIComponent(task.filePath)}:${task.lineNr+1}`;
-    */
-
   }
 
 }

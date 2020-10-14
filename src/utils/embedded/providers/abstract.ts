@@ -7,6 +7,7 @@ import * as vscode from 'vscode';
 import Config from '../../../config';
 import EmbeddedView from '../../../views/embedded';
 import Folder from '../../folder';
+import History from './history';
 
 /* ABSTRACT */
 
@@ -72,6 +73,12 @@ class Abstract {
   filesData = undefined; // { [filePath]: todo[] | undefined }
   queue = [];
   watcher: vscode.FileSystemWatcher = undefined;
+
+  history: History;
+
+  constructor() {
+    this.history = new History();
+  }
 
   async get ( rootPaths = Folder.getAllRootPaths (), filter ) {
 
@@ -167,6 +174,7 @@ class Abstract {
   async initFilesData ( rootPaths ) {
 
     this.filesData = {};
+    this.queue = [];
 
   }
 
@@ -222,6 +230,7 @@ class Abstract {
 
     // TODO: Log to history
     // TODO: Round the review date to a day boundary somehow (don't make it exactly 24 hours from NOW)
+    this.history.logCardRecall(card, success);
   }
 
 }
