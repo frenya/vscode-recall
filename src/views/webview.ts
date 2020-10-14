@@ -108,24 +108,13 @@ async function getWebviewContent(styleSrc, fallbackMessage, card, pagesShown = 1
 }
 
 /* Card render */
-const demoCard = {
-  pages: [
-   '# Memory card with text paragraphs',
-   'This is the first paragraph.\nIt is separated from the rest by an empty line.',
-   'This is the second paragraph.',
-  ],
-  root: 'New Datacenter',
-  relativePath: 'Cards Demo.md',
-};
-
 async function renderPage(pageText) {
   return await vscode.commands.executeCommand ( 'markdown.api.render', pageText );
 }
 
 async function renderCard (card) {
   const renderedPages = await Promise.all(card.pages.map(async (text, i) => {
-    const pageHTML = await renderPage(text);
-    return `<div class="${i ? 'back' : 'front'}">${pageHTML}</div>`;
+    return `<div class="${i ? 'back' : 'front'}">${await renderPage(text)}</div>`;
   }));
 
   return `<div class="preamble">
