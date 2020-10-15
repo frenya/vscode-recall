@@ -42,14 +42,24 @@ async function open () {
       .catch(console.error);
   }
 
+  function expandCard() {
+    pagesShown++;
+    getWebviewContent(styleSrc, 'No cards to review. Well done!', currentCard, pagesShown)
+      .then(html => panel.webview.html = html)
+      .catch(console.error);
+  }
+
   showNextCard();
 
   // Handle messages from the webview
   panel.webview.onDidReceiveMessage(
     message => {
       console.log(message);
-      cardProvider.processReviewResult(currentCard, message === 'remembered');
-      showNextCard();
+      if (message === 'expand') expandCard();
+      else {
+        cardProvider.processReviewResult(currentCard, message === 'remembered');
+        showNextCard();
+      }
     },
     undefined,
     Utils.context.subscriptions
@@ -83,11 +93,12 @@ async function getWebviewContent(styleSrc, fallbackMessage, card, pagesShown = 1
 </head>
 <body>
     <div class="container">
-    ${card ? await renderCard(card) : fallbackMessage}
+    ${card ? await renderCard(card, pagesShown) : fallbackMessage}
     </div>
     <script>
       (function() {
         const vscode = acquireVsCodeApi();
+        addOnClickHandler('expand');
         addOnClickHandler('remembered');
         addOnClickHandler('forgot');
 
@@ -112,9 +123,9 @@ async function renderPage(pageText) {
   return await vscode.commands.executeCommand ( 'markdown.api.render', pageText );
 }
 
-async function renderCard (card) {
+async function renderCard (card, pagesShown) {
   const renderedPages = await Promise.all(card.pages.map(async (text, i) => {
-    return `<div class="${i ? 'back' : 'front'}">${await renderPage(text)}</div>`;
+    return `<div class="${i ? 'back' : 'front'}" style="${i < pagesShown ? '' : 'display: none;'}>${await renderPage(text)}</div>`;
   }));
 
   return `<div class="preamble">
@@ -122,13 +133,15 @@ async function renderCard (card) {
     <span>Recall: ${card.recall}</span>
   </div>
   <div class="card">
-  ${renderedPages.join('\n')}
-  <div class="buttons">
-    <a id="remembered" href="#" class="btn">Remembered</a>
-    <a id="forgot"   href="#" class="btn">Forgot</a>
-  </div>
-
-</div>`;
+    ${renderedPages.join('\n')}
+    <div class="buttons" style="${pagesShown < card.pages.length ? '' : 'display: none;'}">
+      <a id="expand" href="#" class="btn" onclick="console.log">Expand</a>
+    </div>
+    <div class="buttons" style="${pagesShown === card.pages.length ? '' : 'display: none;'}">
+      <a id="remembered" href="#" class="btn">Remembered</a>
+      <a id="forgot"   href="#" class="btn">Forgot</a>
+    </div>
+  </div>`;
 }
 
 /* EXPORT */
