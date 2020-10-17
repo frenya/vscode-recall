@@ -10,8 +10,8 @@ import Utils from '../utils';
 async function open () {
   // Create and show panel
   const panel = vscode.window.createWebviewPanel(
-    'catCoding',
-    'Cat Coding',
+    'recallTest',
+    'Recall - test session',
     vscode.ViewColumn.One,
     {
       // Only allow the webview to access resources in our extension's media directory
