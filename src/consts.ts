@@ -33,6 +33,7 @@ const Consts = {
   cardRegexes: {
     header: new RegExp ('^(#)#*', 'gm' ),  // Any header represents a start of a new card
     bullet: new RegExp ('^(#)#*|^-\\s', 'gm' ),  // Any header or first level bullet point represents a start of a new card
+    asterisk: new RegExp ('^(#)#*|^\\*\\s', 'gm' ),  // Any header or first level bullet point represents a start of a new card
   }
 };
 

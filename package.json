@@ -80,13 +80,16 @@
           "enum": [
             "header",
             "bullet",
+            "asterisk",
             "ignore"
           ],
           "enumDescriptions": [
             "Any header starts a new card",
-            "Any header and/or bullet starts a new card",
+            "Any header and/or dash bullet starts a new card",
+            "Any header and/or asterisk bullet starts a new card",
             "No cards are detected by default"
-          ]
+          ],
+          "default": "ignore"
         }
       }
     },
