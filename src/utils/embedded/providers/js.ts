@@ -75,6 +75,7 @@ class JS extends Abstract {
     // i.e. the regex to use to detect card starts
     const recall = result.metadata.recall || config.get('defaultLevel') || 'header';
     const cardRegex = Consts.cardRegexes[recall];
+    const lineDivider:string = config.get('lineDivider') || ':';
     
     // Sanity check
     if ( !content || !cardRegex ) return data;
@@ -100,7 +101,7 @@ class JS extends Abstract {
 
       if (cardPages.length === 1) {
         // Card only has one page. Let's try to split it by a special character
-        cardPages = cardText.split(':').map(text => _.trim(text));
+        cardPages = cardText.split(lineDivider).map(text => _.trim(text));
       }
 
       // Only push the cards that do have two or more pages

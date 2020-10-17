@@ -90,6 +90,12 @@
             "No cards are detected by default"
           ],
           "default": "ignore"
+        },
+        "recall.lineDivider": {
+          "type": "string",
+          "scope": "resource",
+          "description": "Divider used in single line cards",
+          "default": ":"
         }
       }
     },
