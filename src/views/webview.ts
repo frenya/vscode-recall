@@ -43,7 +43,7 @@ async function open () {
   }
 
   function expandCard() {
-    pagesShown++;
+    if (pagesShown < currentCard.pages.length) pagesShown++;
     getWebviewContent(styleSrc, 'No cards to review. Well done!', currentCard, pagesShown)
       .then(html => panel.webview.html = html)
       .catch(console.error);
@@ -103,7 +103,7 @@ async function getWebviewContent(styleSrc, fallbackMessage, card, pagesShown = 1
         addOnClickHandler('forgot');
 
         function onButtonClick(id) {
-          console.log(id);
+          // console.log(id);
           vscode.postMessage(id);
         }
 
@@ -111,6 +111,12 @@ async function getWebviewContent(styleSrc, fallbackMessage, card, pagesShown = 1
           const btn = document.getElementById(id);
           console.log(btn);
           btn.onclick = function (e) { onButtonClick(id); };
+        };
+
+        document.body.onkeypress = function(e) { 
+          if (e.code === 'Space') onButtonClick('expand');
+          else if (e.code === 'Enter') onButtonClick('remembered');
+          else if (e.code === 'KeyF' ) onButtonClick('forgot');
         };
       }());
     </script>
