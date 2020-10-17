@@ -94,15 +94,28 @@ class JS extends Abstract {
       let nextCardStart = i + 1 < matches.length ? matches[i + 1].index : content.length;
       let cardText = _.trim(content.substring(match.index, nextCardStart).replace(cardRegex, '$1'));
 
+      // Quick and dirty - distinguish the type of card
+      const isHeader = content[match.index] === '#';
+
       // console.log(cardText);
 
       // Split by empty line
       let cardPages = cardText.split ( /\r?\n\r?\n/ ).map(text => _.trim(text));
 
-      if (cardPages.length === 1) {
-        // Card only has one page. Let's try to split it by a special character
+      if (!isHeader) {
+        // Card is a bullet point. Let's try to split it by a special character
         cardPages = cardText.split(lineDivider).map(text => _.trim(text));
+
+        // Also, split the last page by the first newline
+        let lastPage = cardPages.pop();
+        let splitPages = lastPage.split ( /\r?\n/ ).map(text => _.trim(text));
+
+        cardPages.push(splitPages.shift());
+        cardPages.push(splitPages.join('\n'));
       }
+
+      // Filter out empty pages
+      cardPages = cardPages.filter(text => !!_.trim(text));
 
       // Only push the cards that do have two or more pages
       if (cardPages.length > 1) {
