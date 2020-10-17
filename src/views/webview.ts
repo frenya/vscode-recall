@@ -43,7 +43,7 @@ async function open () {
   }
 
   function expandCard() {
-    if (pagesShown < currentCard.pages.length) pagesShown++;
+    pagesShown++;
     getWebviewContent(styleSrc, 'No cards to review. Well done!', currentCard, pagesShown)
       .then(html => panel.webview.html = html)
       .catch(console.error);
@@ -54,9 +54,11 @@ async function open () {
   // Handle messages from the webview
   panel.webview.onDidReceiveMessage(
     message => {
-      console.log(message);
-      if (message === 'expand') expandCard();
-      else {
+      // console.log(message);
+      if (message === 'expand') {
+        if(pagesShown < currentCard.pages.length) expandCard();
+      }
+      else if (pagesShown === currentCard.pages.length) {
         cardProvider.processReviewResult(currentCard, message === 'remembered');
         showNextCard();
       }
