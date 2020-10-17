@@ -125,7 +125,7 @@ async function renderPage(pageText) {
 
 async function renderCard (card, pagesShown) {
   const renderedPages = await Promise.all(card.pages.map(async (text, i) => {
-    return `<div class="${i ? 'back' : 'front'}" style="${i < pagesShown ? '' : 'display: none;'}>${await renderPage(text)}</div>`;
+    return `<div class="${i ? 'back' : 'front'}" style="${i < pagesShown ? '' : 'display: none;'}">${await renderPage(text)}</div>`;
   }));
 
   return `<div class="preamble">
