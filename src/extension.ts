@@ -35,7 +35,7 @@ const deactivate = function () {
 
   Utils.embedded.provider.history.destructor();
 
-}
+};
 
   /* EXPORT */
 
