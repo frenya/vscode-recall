@@ -7,6 +7,8 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import Utils from '../utils';
 
+const ARCHIVE_RECALL = 10000;
+
 async function open () {
   // Create and show panel
   const panel = vscode.window.createWebviewPanel(
@@ -49,6 +51,15 @@ async function open () {
       .catch(console.error);
   }
 
+  function toggleArchiveCard() {
+    if (currentCard.recall > ARCHIVE_RECALL) currentCard.recall -= ARCHIVE_RECALL;
+    else currentCard.recall += ARCHIVE_RECALL;
+
+    getWebviewContent(styleSrc, 'No cards to review. Well done!', currentCard, pagesShown)
+      .then(html => panel.webview.html = html)
+      .catch(console.error);
+  }
+
   showNextCard();
 
   // Handle messages from the webview
@@ -59,8 +70,14 @@ async function open () {
         if (message === 'expand') expandCard();
       }
       else {
-        cardProvider.processReviewResult(currentCard, message === 'remembered');
-        showNextCard();
+        if (message === 'archive') toggleArchiveCard();
+        else {
+          // Don't archive when "forgot" is sent
+          if (message === 'forgot' && currentCard.recall > ARCHIVE_RECALL) currentCard.recall -= ARCHIVE_RECALL;
+          
+          cardProvider.processReviewResult(currentCard, message === 'remembered');
+          showNextCard();
+        }
       }
     },
     undefined,
@@ -119,6 +136,8 @@ async function getWebviewContent(styleSrc, fallbackMessage, card, pagesShown = 1
           if (e.code === 'Space') onButtonClick('expand');
           else if (e.code === 'Enter') onButtonClick('remembered');
           else if (e.code === 'KeyF' ) onButtonClick('forgot');
+          else if (e.code === 'KeyA' ) onButtonClick('archive');
+          else console.log(e);
         };
       }());
     </script>
@@ -148,6 +167,9 @@ async function renderCard (card, pagesShown) {
     <div class="buttons" style="${pagesShown === card.pages.length ? '' : 'display: none;'}">
       <a id="remembered" href="#" class="btn">Remembered</a>
       <a id="forgot"   href="#" class="btn">Forgot</a>
+    </div>
+    <div class="buttons" style="${card.recall > ARCHIVE_RECALL ? '' : 'display: none;'}">
+      <span class="warning">Press Enter to archive the card.</span>
     </div>
   </div>`;
 }
