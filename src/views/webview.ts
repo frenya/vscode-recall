@@ -17,7 +17,7 @@ async function open () {
     vscode.ViewColumn.One,
     {
       // Only allow the webview to access resources in our extension's media directory
-      localResourceRoots: [vscode.Uri.file(path.join(Utils.context.extensionPath, 'src', 'views'))],
+      //localResourceRoots: [vscode.Uri.file(path.join(Utils.context.extensionPath, 'src', 'views'))],
       // Enable scripts in the webview
       enableScripts: true
     }
@@ -39,32 +39,49 @@ async function open () {
   function showNextCard() {
     currentCard = cardProvider.getNextCard();
     pagesShown = 1;
-    getWebviewContent(styleSrc, 'No cards to review. Well done!', currentCard, pagesShown)
-      .then(html => panel.webview.html = html)
-      .catch(console.error);
+    rerender();
   }
 
   function expandCard() {
     pagesShown++;
-    getWebviewContent(styleSrc, 'No cards to review. Well done!', currentCard, pagesShown)
-      .then(html => panel.webview.html = html)
-      .catch(console.error);
+    rerender();
   }
 
   function toggleArchiveCard() {
     if (currentCard.recall > ARCHIVE_RECALL) currentCard.recall -= ARCHIVE_RECALL;
     else currentCard.recall += ARCHIVE_RECALL;
+    rerender();
+  }
 
+  function rerender () {
     getWebviewContent(styleSrc, 'No cards to review. Well done!', currentCard, pagesShown)
-      .then(html => panel.webview.html = html)
+      .then(html => panel.webview.html = replaceRelativeMediaPaths(html, currentCard.rootPath))   // FIXME: Won't work for subdirs
       .catch(console.error);
   }
 
+  function replaceRelativeMediaPaths (html, filePath) {
+
+    // Replacer function - 
+    function replacer (match, relPath, offset, str) {
+      const onDiskPath = vscode.Uri.file(path.join(filePath, relPath));
+      return `src="${panel.webview.asWebviewUri(onDiskPath)}"`;
+    }
+  
+    return html.replace(/src="([^"]*)"/, replacer);
+  
+  }
+  
   showNextCard();
 
   // Handle messages from the webview
   panel.webview.onDidReceiveMessage(
     message => {
+      if (message === 'next') {
+        currentCard.nextReviewDate += 60 * 1000;
+        showNextCard();
+        return;
+      }
+
       // console.log(message);
       if(pagesShown < currentCard.pages.length) {
         if (message === 'expand') expandCard();
@@ -108,7 +125,7 @@ async function getWebviewContent(styleSrc, fallbackMessage, card, pagesShown = 1
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="${styleSrc}">
-    <title>Cat Coding</title>
+    <title>Recall - test session</title>
 </head>
 <body>
     <div class="container">
@@ -137,6 +154,7 @@ async function getWebviewContent(styleSrc, fallbackMessage, card, pagesShown = 1
           else if (e.code === 'Enter') onButtonClick('remembered');
           else if (e.code === 'KeyF' ) onButtonClick('forgot');
           else if (e.code === 'KeyA' ) onButtonClick('archive');
+          else if (e.code === 'KeyN' ) onButtonClick('next');
           else console.log(e);
         };
       }());
