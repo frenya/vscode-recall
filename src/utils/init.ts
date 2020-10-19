@@ -4,7 +4,6 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 import * as Commands from '../commands';
-import Views from '../views';
 
 /* INIT */
 
@@ -29,18 +28,6 @@ const Init = {
     return Commands;
 
   },
-
-  views () {
-
-    Views.forEach ( View => {
-      vscode.window.registerTreeDataProvider ( View.id, View );
-    });
-
-    vscode.workspace.onDidChangeConfiguration ( () => {
-      Views.forEach ( View => View.refresh () );
-    });
-
-  }
 
 };
 

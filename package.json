@@ -102,24 +102,6 @@
           "default": ":"
         }
       }
-    },
-    "markdown.markdownItPlugins": true,
-    "views": {
-      "recall": [
-        {
-          "id": "recall.views.coffeeBreak",
-          "name": "Coffee Break"
-        }
-      ]
-    },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "recall",
-          "title": "Coffee Break",
-          "icon": "resources/icons/brain-svgrepo-com.svg"
-        }
-      ]
     }
   },
   "scripts": {

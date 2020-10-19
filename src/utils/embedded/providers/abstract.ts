@@ -5,7 +5,7 @@ import * as _ from 'lodash';
 import * as querystring from 'querystring';
 import * as vscode from 'vscode';
 import Config from '../../../config';
-import EmbeddedView from '../../../views/embedded';
+// import EmbeddedView from '../../../views/embedded';
 import Folder from '../../folder';
 import History from './history';
 
@@ -109,7 +109,9 @@ class Abstract {
 
     /* HANDLERS */
 
-    const refresh = _.debounce ( () => EmbeddedView.refresh (), 250 );
+    // TODO: Signal the webview to refresh
+    // const refresh = _.debounce ( () => EmbeddedView.refresh (), 250 );
+    const refresh = () => {};
 
     const add = event => {
       if ( !this.filesData ) return;
