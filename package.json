@@ -29,6 +29,10 @@
       {
         "command": "recall.startRecall",
         "title": "Start new test session"
+      },
+      {
+        "command": "recall.convertMochiJSON",
+        "title": "Convert Mochi JSON"
       }
     ],
     "configuration": {

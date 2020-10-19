@@ -12,6 +12,32 @@ function startRecall () {
   return openWebview();
 }
 
+function convertMochiJSON () {
+  try {
+    let mochi = JSON.parse(vscode.window.activeTextEditor.document.getText());
+    console.log(mochi);
+
+    mochi.decks.forEach(processDeck);
+  }
+  catch (e) {
+    console.error(e);
+  }
+}
+
+function processDeck (deck) {
+  let deckContent = _.trim(deck.cards.map(generateMarkdownForCard).join('\n\n'));
+
+  if (deckContent) openNewMarkdownDocument(`# ${deck.name}\n\n${deckContent}`);
+}
+
+function generateMarkdownForCard (card) {
+  return `## ${card.name}\n\n${card.content}`;
+}
+
+function openNewMarkdownDocument (content) {
+  vscode.workspace.openTextDocument({ content, language: 'markdown' })
+    .then((doc: vscode.TextDocument) => vscode.window.showTextDocument(doc, 1, false));
+}
 
 /**
  * Returns a command url usable in Markdown strings.
@@ -27,5 +53,5 @@ const createCommandUrl = (commandName, ...params) => {
 /* EXPORT */
 
 export {
-  createCommandUrl, startRecall,
+  createCommandUrl, startRecall, convertMochiJSON,
 };
