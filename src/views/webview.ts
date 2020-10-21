@@ -174,8 +174,7 @@ async function renderCard (card, pagesShown) {
   }));
 
   return `<div class="preamble">
-    <span>Id: ${card.checksum}</span>
-    <span>Recall: ${card.recall}</span>
+    <span><b>${card.root}</b> / ${card.relativePath}</span>
   </div>
   <div class="card">
     ${renderedPages.join('\n')}
@@ -189,6 +188,10 @@ async function renderCard (card, pagesShown) {
     <div class="buttons" style="${card.recall > ARCHIVE_RECALL ? '' : 'display: none;'}">
       <span class="warning">Press Enter to archive the card.</span>
     </div>
+  </div>
+  <div class="postscript">
+    <span>Id: ${card.checksum}</span>
+    <span>Recall: ${card.recall}</span>
   </div>`;
 }
 

@@ -19,7 +19,7 @@ body {
   color: white;
 }
 
-.preamble {
+.postscript {
   font-size: 12px;
   color: #383A3F;
   width: 100%;
@@ -32,8 +32,22 @@ body {
   -webkit-box-pack: justify;
           justify-content: space-between;
 }
-.preamble:hover {
+.postscript:hover {
   color: #888;
+}
+
+.preamble {
+  font-size: 12px;
+  color: #888;
+  width: 100%;
+  padding: 20px 20px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+          flex-direction: row;
+  -webkit-box-pack: justify;
+          justify-content: space-between;
 }
 
 .card .front {
