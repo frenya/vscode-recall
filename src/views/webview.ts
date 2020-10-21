@@ -90,10 +90,15 @@ async function open () {
         if (message === 'archive') toggleArchiveCard();
         else {
           // Don't archive when "forgot" is sent
-          if (message === 'forgot' && currentCard.recall > ARCHIVE_RECALL) currentCard.recall -= ARCHIVE_RECALL;
-          
-          cardProvider.processReviewResult(currentCard, message === 'remembered');
-          showNextCard();
+          if (message === 'forgot') {
+            if(currentCard.recall > ARCHIVE_RECALL) currentCard.recall -= ARCHIVE_RECALL;
+            cardProvider.processReviewResult(currentCard, false);
+            showNextCard();
+          }
+          else if (message === 'remembered') {
+            cardProvider.processReviewResult(currentCard, true);
+            showNextCard();
+          }
         }
       }
     },
