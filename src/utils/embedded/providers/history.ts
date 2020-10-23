@@ -60,15 +60,21 @@ class History {
     }
   }
 
-  /* async */ loadCardHistoryCSV (filePath) {
+  /* async - essentially, returns Promise*/ 
+  loadCardHistoryCSV (filePath) {
+    // Get review date from filename
+    const match = /recall-([0-9-]*)\.csv/.exec(filePath);
+    const timestamp = match ? new Date(match[1]).valueOf() : 0;
+    // console.log('Date from filename', filePath, new Date(timestamp));
+
     return new Promise<RowType[]>((resolve, reject) => {
       let result = [];
       try {
         fs.createReadStream(filePath)
-          .pipe(parse({ headers: ['checksum', 'timestamp', 'success', 'recall'] }))
+          .pipe(parse({ headers: ['checksum', 'success', 'recall'] }))
           .transform(row => ({
             checksum: row.checksum,
-            timestamp: parseInt(row.timestamp),
+            timestamp: timestamp,
             success: !!parseInt(row.success),
             recall: parseInt(row.recall),
           }))
@@ -115,7 +121,7 @@ class History {
 
       console.log('Card history for ', card.rootPath, cards);
   
-      const csvData = [card.checksum, Date.now(), success ? 1 : 0, card.recall];
+      const csvData = [card.checksum, success ? 1 : 0, card.recall];
       console.log('Writing card to log', card, csvData);
   
       try {
