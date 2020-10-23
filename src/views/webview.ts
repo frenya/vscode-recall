@@ -64,7 +64,7 @@ async function open () {
 
   function rerender () {
     getWebviewContent(styleSrc, 'No cards to review. Well done!', currentCard, pagesShown)
-      .then(html => panel.webview.html = replaceRelativeMediaPaths(html, currentCard.rootPath))   // FIXME: Won't work for subdirs
+      .then(html => panel.webview.html = replaceRelativeMediaPaths(html, currentCard ? currentCard.rootPath : ''))   // FIXME: Won't work for subdirs
       .catch(console.error);
   }
 
