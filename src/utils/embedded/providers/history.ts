@@ -38,8 +38,8 @@ class History {
         cards: Promise.resolve({}),
 
         // Writer stream
-        // stream: process.stdout
-        stream: format({ includeEndRowDelimiter: true })
+        stream: process.stdout
+        // stream: format({ includeEndRowDelimiter: true })
       };
       this.recallHistory[folderPath] = folderHistory;
 
@@ -47,10 +47,10 @@ class History {
       const logPath = path.join(folderPath, '.recall');
       fs.mkdirSync(logPath, { recursive: true });
 
-      folderHistory.stream.pipe(fs.createWriteStream(
+      folderHistory.stream = fs.createWriteStream(
         path.join(logPath, `recall-${new Date().toISOString().substr(0, 10)}.csv`), 
         { flags: 'a' } // 'a' means appending (old data will be preserved)
-      ));
+      );
 
       // Load the history
       // NOTE: the .cards attribute is actually a Promise that resolves to an object
@@ -125,7 +125,7 @@ class History {
       console.log('Writing card to log', card, csvData);
   
       try {
-        const result = folderHistory.stream.write(csvData);
+        const result = folderHistory.stream.write(csvData.join(',') + '\n');
         console.log('Write result', result);
       }
       catch (e) {
