@@ -10,6 +10,14 @@ import Utils from '../utils';
 const ARCHIVE_RECALL = 10000;
 
 async function open () {
+
+  // Only allow one instance to exist
+  // see https://code.visualstudio.com/api/extension-guides/webview#visibility-and-moving
+  if (Utils.panel) {
+    Utils.panel.reveal();
+    return;
+  }
+
   // Create and show panel
   const panel = vscode.window.createWebviewPanel(
     'recallTest',
@@ -22,6 +30,7 @@ async function open () {
       enableScripts: true
     }
   );
+  Utils.panel = panel;
 
   const onDiskPath = vscode.Uri.file(path.join(Utils.context.extensionPath, 'src', 'views', 'card.css'));
   const styleSrc = panel.webview.asWebviewUri(onDiskPath);
@@ -114,11 +123,6 @@ async function open () {
     Utils.context.subscriptions
   );
 
-  // TODO: Only allow one instance to exist
-  // see https://code.visualstudio.com/api/extension-guides/webview#visibility-and-moving
-
-
-  // console.log(onDiskPath, panel.webview.html);
 }
 
 async function getWebviewContent(styleSrc, fallbackMessage, card, pagesShown = 1) {

@@ -19,6 +19,9 @@ const Utils = {
   init,
   view,
 
+  // Webview panel
+  panel: null,
+
   getContextValue: function (key) { 
     return this.context.workspaceState.get(key);
   },
