@@ -32,8 +32,6 @@ const activate = function ( context: vscode.ExtensionContext ) {
 
 const deactivate = function () {
 
-  Utils.embedded.provider.history.destructor();
-
 };
 
   /* EXPORT */

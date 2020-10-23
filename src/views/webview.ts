@@ -117,7 +117,10 @@ async function open () {
 
   panel.onDidDispose(
     () => {
-      // TODO: Handle onDidDispose properly
+      Utils.embedded.provider.history.destructor();
+      Utils.embedded.provider = undefined;
+
+      Utils.panel = null;
     },
     null,
     Utils.context.subscriptions
