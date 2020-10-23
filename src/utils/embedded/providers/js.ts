@@ -126,7 +126,6 @@ class JS extends Abstract {
           rootPath: parsedPath.rootPath,
           relativePath: parsedPath.relativePath,
           checksum: md5(cardPages.join('\n')),
-          // TODO: Get this from history
           nextReviewDate: 0,
           recall: 1,
         };

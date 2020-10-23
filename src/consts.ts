@@ -19,8 +19,6 @@ const Consts = {
     todo: /^(\s*)([*+-]\s+\[[ xX]\]\s*)(.*)$/,
     todoBox: /^(\s*)([*+-]\s+\[ \]\s*)(.*)$/,
     todoDone: /^(\s*)([*+-]\s+\[[xX]\]\s*)(.*)$/,
-    todoEmbedded: new RegExp ('(?:-\\s*\\[ \\])(?:( (?:@[^\\s]*)?))(.*)'),  // FIXME: Not consistent with regexes above
-    todoEmbeddedGlobal: new RegExp ('(?:-\\s*\\[ \\])(?:( (?:@[^\\s]*)?))(.*)', 'g' ),  // Same regex as above, with global flag
     todoBoxGlobal: new RegExp ('(?<=^\\s*)(-\\s*\\[ \\])(?: (?:@([^\\s]*))?)', 'gm' ),  // Finds only the checkboxes
     mention: /@([A-Z][a-zA-Z]*)/,
     mentionGlobal: /@([A-Z][a-zA-Z]*)/g,
