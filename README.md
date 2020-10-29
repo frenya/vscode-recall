@@ -70,18 +70,18 @@ recall: bullet
 # Support
 
 - File bugs, feature requests in [GitHub Issues](https://github.com/frenya/vscode-recall)
-- Leave a review on Visual Studio Marketplace
+- Leave a review on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=frenya.vscode-recall)
 - Check out my [other extensions](https://marketplace.visualstudio.com/publishers/frenya)
 - If you like this extension and want to support it's further development, you can [Buy Me a Coffee](https://www.buymeacoffee.com/frenya)
 
 
-<a href="https://www.buymeacoffee.com/frenya" target="_blank">
+<!-- a href="https://www.buymeacoffee.com/frenya" target="_blank">
   <img
     src="https://cdn.buymeacoffee.com/buttons/v2/default-green.png"
     alt="Buy Me A Coffee"
     style="height: 60px !important;width: 217px !important;"
   >
-</a>
+</a -->
 
 # Credits
 

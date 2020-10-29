@@ -32,7 +32,7 @@ async function open () {
   );
   Utils.panel = panel;
 
-  const onDiskPath = vscode.Uri.file(path.join(Utils.context.extensionPath, 'src', 'views', 'card.css'));
+  const onDiskPath = vscode.Uri.file(path.join(Utils.context.extensionPath, 'resources', 'css', 'card.css'));
   const styleSrc = panel.webview.asWebviewUri(onDiskPath);
 
   // Show loading message
