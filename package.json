@@ -3,7 +3,7 @@
   "displayName": "Recall",
   "description": "Spaced repetition flashcards plugin",
   "icon": "resources/logo/recall.png",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "license": "MIT",
   "engines": {
     "vscode": "^1.38.0"
@@ -28,11 +28,11 @@
     "commands": [
       {
         "command": "recall.startRecall",
-        "title": "Start new test session"
+        "title": "Recall: Flashcards Test"
       },
       {
         "command": "recall.convertMochiJSON",
-        "title": "Convert Mochi JSON"
+        "title": "Recall: Convert Mochi JSON"
       }
     ],
     "configuration": {
@@ -142,7 +142,12 @@
     "memory",
     "remember",
     "spaced repetition",
-    "productivity"
+    "flashcard",
+    "flashcards",
+    "flash card",
+    "flash cards",
+    "productivity",
+    "mochi"
   ],
   "dependencies": {
     "absolute": "0.0.1",

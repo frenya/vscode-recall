@@ -7,10 +7,6 @@ import * as glob from 'glob';
 
 import * as mocks from './mocks';
 
-// FIXME: Not used anymore - remove
-// import { CoverageRunner } from './coverage';
-// const coverOptions = require('../../../coverconfig.json');
-
 // Linux: prevent a weird NPE when mocha on Linux requires the window size from the TTY
 // Since we are not running in a tty environment, we just implementt he method statically
 const tty = require('tty');

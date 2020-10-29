@@ -21,7 +21,7 @@ async function open () {
   // Create and show panel
   const panel = vscode.window.createWebviewPanel(
     'recallTest',
-    'Recall - test session',
+    'Recall: Flashcards Test',
     vscode.ViewColumn.One,
     {
       // Only allow the webview to access resources in our extension's media directory
@@ -137,7 +137,7 @@ async function getWebviewContent(styleSrc, fallbackMessage, card, pagesShown = 1
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="${styleSrc}">
-    <title>Recall - test session</title>
+    <title>Recall: Flashcards Test</title>
 </head>
 <body>
     <div class="container">
