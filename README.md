@@ -6,10 +6,13 @@ It creates flashcards directly from your notes and let's you test yourself repea
 
 # How does it work?
 
-Write your notes in Markdown and store them in .md files. For more information on Markdown, please visit [Markdown Guide](https://www.markdownguide.org/).
+Write your notes in Markdown and store them in .md files.
 **Recall** will scan your workspace folders, identify possible "flashcards" and test you using spaced repetition.
 
-Note: To see your note rendered as HTML, simply use the Markdown Preview functionality of VS Code.
+Notes:
+
+- To see your note rendered as HTML, simply use the Markdown Preview functionality of VS Code.
+- For more information on Markdown, please visit [Markdown Guide](https://www.markdownguide.org/).
 
 ## How are flashcards identified
 
@@ -24,7 +27,7 @@ Note: To see your note rendered as HTML, simply use the Markdown Preview functio
   - the newline at the end of the bullet point also serves as a page divider
 - if a flashcard has at least two pages, it will be put in the testing queue
 
-To better understand the above, look at the practical examples in the [demo folder]().
+To better understand the above, look at the practical examples in the [demo folder](https://github.com/frenya/vscode-recall/tree/master/demo).
 
 ## Testing yourself
 
@@ -49,7 +52,7 @@ the recall level will be doubled. If you mark it as forgotten, the recall level 
 
 # Configuration
 
-You can find the configuration options in Settings (Extensions -> **Recall**). The two most important settings are
+You can find the configuration options in Settings (Extensions -> Recall). The two most important settings are
 
 - Default Level - defines at which level to detect flashcards
   - **ignore** - no detection will be done
@@ -59,6 +62,7 @@ You can find the configuration options in Settings (Extensions -> **Recall**). T
 - Line Divider - delimiter used in single line cards (use any string that works for you - colon, semicolon, slash, etc.), can even be multi-character sequence
 
 If you need to override the default level of card recognition for a particular file, you can use the YAML header.
+
 For example, to tell **Recall** that individual bullets should be recognized in the file, simply add the following sequence at the beginning of your .md file.
 
 ```yaml
@@ -69,7 +73,7 @@ recall: bullet
 
 # Support
 
-- File bugs, feature requests in [GitHub Issues](https://github.com/frenya/vscode-recall)
+- File bugs, feature requests in [GitHub Issues](https://github.com/frenya/vscode-recall/issues)
 - Leave a review on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=frenya.vscode-recall)
 - Check out my [other extensions](https://marketplace.visualstudio.com/publishers/frenya)
 - If you like this extension and want to support it's further development, you can [Buy Me a Coffee](https://www.buymeacoffee.com/frenya)
@@ -85,7 +89,7 @@ recall: bullet
 
 # Credits
 
-Some concepts of this extension were inspired by the [Mochi](https://mochi.cards/) application, go ahead and check it out. You may find it
-more suitable to your needs.
+Some concepts of this extension were inspired by the [Mochi](https://mochi.cards/) application.
+Go ahead and check it out. You may find it more suitable to your needs.
 
 Please note that I am not associated with that project in any way.
