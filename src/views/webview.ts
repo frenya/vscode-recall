@@ -64,16 +64,19 @@ async function open () {
 
   function rerender () {
     getWebviewContent(styleSrc, 'No cards to review. Well done!', currentCard, pagesShown)
-      .then(html => panel.webview.html = replaceRelativeMediaPaths(html, currentCard ? currentCard.rootPath : ''))   // FIXME: Won't work for subdirs
+      .then(html => panel.webview.html = replaceRelativeMediaPaths(html))
       .catch(console.error);
   }
 
-  function replaceRelativeMediaPaths (html, filePath) {
+  function replaceRelativeMediaPaths (html) {
+
+    const basePath = currentCard ? currentCard.rootPath : '';
+    const subdirPath = currentCard ? currentCard.subdirPath : '';
 
     // Replacer function - 
     function replacer (match, relPath, offset, str) {
-      const onDiskPath = vscode.Uri.file(path.join(filePath, relPath));
-      return `src="${panel.webview.asWebviewUri(onDiskPath)}"`;
+      const onDiskPath = path.isAbsolute(relPath) ? relPath : path.join(basePath, subdirPath, relPath);
+      return `src="${panel.webview.asWebviewUri(vscode.Uri.file(onDiskPath))}"`;
     }
   
     return html.replace(/src="([^"]*)"/, replacer);

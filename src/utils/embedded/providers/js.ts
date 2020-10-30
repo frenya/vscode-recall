@@ -124,6 +124,7 @@ class JS extends Abstract {
           filePath,
           root: parsedPath.root,
           rootPath: parsedPath.rootPath,
+          subdirPath: parsedPath.subdirPath,
           relativePath: parsedPath.relativePath,
           checksum: md5(cardPages.join('\n')),
           nextReviewDate: 0,

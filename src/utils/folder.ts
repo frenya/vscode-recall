@@ -80,7 +80,8 @@ const Folder = {
       return {
         root: path.basename ( match[1] ),
         rootPath: match[1],
-        relativePath: path.basename(match[2])
+        subdirPath: path.dirname(match[2]),
+        relativePath: path.basename(match[2]) // Actually just the filename
       };
 
     } else { // External path
@@ -88,6 +89,7 @@ const Folder = {
       return {
         root: path.basename ( path.dirname ( filePath ) ),
         rootPath: path.dirname ( filePath ),
+        subdirPath: '',
         relativePath: path.basename ( filePath )
       };
 
