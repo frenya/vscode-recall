@@ -1,0 +1,167 @@
+{
+  "name": "vscode-recall",
+  "displayName": "Recall",
+  "description": "Spaced repetition flashcards plugin",
+  "icon": "resources/logo/recall.png",
+  "version": "0.1.1",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.38.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./dist/extension.js",
+  "publisher": "frenya",
+  "author": {
+    "name": "Frantisek Vymazal",
+    "email": "frenya@frenya.net"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/frenya/vscode-recall"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "recall.startRecall",
+        "title": "Recall: Flashcards Test"
+      },
+      {
+        "command": "recall.convertMochiJSON",
+        "title": "Recall: Convert Mochi JSON"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Recall",
+      "properties": {
+        "recall.include": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Globs to use for including files",
+          "default": [
+            "**/*.md"
+          ]
+        },
+        "recall.exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Globs to use for excluding files",
+          "default": [
+            "**/.*",
+            "**/.*/**",
+            "**/_output/**",
+            "**/bower_components/**",
+            "**/build/**",
+            "**/dist/**",
+            "**/node_modules/**",
+            "**/out/**",
+            "**/output/**",
+            "**/release/**",
+            "**/releases/**",
+            "**/static/**",
+            "**/target/**",
+            "**/third_party/**",
+            "**/vendor/**",
+            "**/CHANGELOG",
+            "**/CHANGELOG.*",
+            "**/*.min.*",
+            "**/*.map"
+          ]
+        },
+        "recall.defaultLevel": {
+          "type": "string",
+          "scope": "resource",
+          "description": "Default level at which to detect cards in markdown files. Can be overridden in the YAML header (see documentation).",
+          "enum": [
+            "header",
+            "bullet",
+            "asterisk",
+            "ignore"
+          ],
+          "enumDescriptions": [
+            "Any header starts a new card",
+            "Any header and/or dash bullet starts a new card",
+            "Any header and/or asterisk bullet starts a new card",
+            "No cards are detected by default"
+          ],
+          "default": "ignore"
+        },
+        "recall.lineDivider": {
+          "type": "string",
+          "scope": "resource",
+          "description": "Divider used in single line cards",
+          "default": ":"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "webpack --mode production",
+    "webpack": "webpack --mode development",
+    "webpack-dev": "webpack --mode development --watch --info-verbosity verbose",
+    "compile": "npm run webpack",
+    "watch": "tsc -watch -p ./",
+    "test-compile": "npm run main-out && tsc -p ./",
+    "main-out": "json -I -f package.json -e 'this.main=\"./out/extension.js\"'",
+    "main-dist": "json -I -f package.json -e 'this.main=\"./dist/extension.js\"'",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test",
+    "package": "vsce package && code --install-extension *.vsix"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.1.1",
+    "@types/lodash": "^4.14.123",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^10.12.21",
+    "@types/vscode": "^1.38.0",
+    "decache": "^4.5.1",
+    "glob": "^7.1.4",
+    "mocha": "^6.2.0",
+    "mockery": "^2.1.0",
+    "nyc": "^15.0.0",
+    "sinon": "^7.4.2",
+    "ts-loader": "^5.4.4",
+    "tslint": "^5.12.1",
+    "typescript": "^3.3.1",
+    "vscode-test": "^1.2.0",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
+  },
+  "keywords": [
+    "vscode",
+    "extension",
+    "memory",
+    "remember",
+    "spaced repetition",
+    "flashcard",
+    "flashcards",
+    "flash card",
+    "flash cards",
+    "productivity",
+    "mochi"
+  ],
+  "dependencies": {
+    "absolute": "0.0.1",
+    "diff": "^3.5.0",
+    "fast-csv": "^4.3.2",
+    "find-up": "^3.0.0",
+    "globby": "^9.2.0",
+    "lodash": "^4.17.15",
+    "markdown-it-regexp": "^0.4.0",
+    "markdown-yaml-metadata-parser": "^2.1.1",
+    "md5": "^2.3.0",
+    "mkdirp": "^0.5.1",
+    "moment": "^2.24.0",
+    "pify": "^4.0.1",
+    "string-matches": "^1.1.3"
+  }
+}

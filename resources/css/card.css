@@ -1,0 +1,141 @@
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+body {
+  background: #383A3F;
+  font-size: 16px;
+  height: 100vh;
+  display: -webkit-box;
+  display: flex;
+}
+
+.card {
+  background: #1F2124;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+  border-radius: 5px;
+  padding: 0px;
+  text-align: left;
+  color: white;
+}
+
+.postscript {
+  font-size: 12px;
+  color: #383A3F;
+  width: 100%;
+  padding: 20px 20px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+          flex-direction: row;
+  -webkit-box-pack: justify;
+          justify-content: space-between;
+}
+.postscript:hover {
+  color: #888;
+}
+
+.preamble {
+  font-size: 12px;
+  color: #888;
+  width: 100%;
+  padding: 20px 20px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+          flex-direction: row;
+  -webkit-box-pack: justify;
+          justify-content: space-between;
+}
+
+.card .front {
+  padding: 20px 20px;
+}
+.card .back {
+  border-top: dotted 1px #444;
+  padding: 20px 20px;
+}
+.card .back ul li {
+  margin: 10px 0;
+  font-size: 14px;
+}
+.card .buttons {
+  border-top: solid 1px #444;
+  width: 100%;
+  padding: 20px 20px;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+          flex-direction: row;
+  -webkit-box-pack: justify;
+          justify-content: space-between;
+}
+.card .btn {
+  display: inline;
+  color: #444;
+  border-radius: 5px;
+  text-decoration: none;
+}
+.card .btn:hover {
+  color: #F68657;
+}
+.card .warning {
+  display: inline;
+  color: #844;
+  border-radius: 5px;
+  text-decoration: none;
+}
+
+.card table {
+  width: 100%;
+  padding: 0; 
+}
+
+.card table tr {
+  border-top: 1px solid #cccccc;
+  /* background-color: white; */
+  margin: 0;
+  padding: 0;
+}
+
+/*
+.card table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+*/
+
+ .card table tr th {
+  font-weight: bold;
+  border: 1px solid #cccccc;
+  text-align: left;
+  margin: 0;
+  padding: 13px 20px;
+}
+
+.card table tr td {
+  border: 1px solid #cccccc;
+  text-align: left;
+  margin: 0;
+  padding: 13px 20px;
+}
+
+.card table tr th :first-child,
+table tr td :first-child {
+  margin-top: 0;
+}
+
+.card table tr th :last-child,
+table tr td :last-child {
+  margin-bottom: 0;
+}
+
+.container {
+  position: relative;
+  margin: auto;
+  width: calc(50%);
+  color: #888;
+  text-align: center;
+}
