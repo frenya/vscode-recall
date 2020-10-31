@@ -5,11 +5,46 @@ import * as _ from 'lodash';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
+var edn = require('edn-data/stream');
+var unzipper = require('unzipper');
 import Utils from '../utils';
 import { open as openWebview } from '../views/webview';
 
 function startRecall () {
   return openWebview();
+}
+
+async function convertMochiExport () {
+  const options = {
+    filters: {
+      'Mochi Archives': [ 'mochi' ]
+    },
+    title: 'Select Mochi export file'
+  };
+  
+  const archiveUri:vscode.Uri[] = await vscode.window.showOpenDialog(options);
+  if (!archiveUri || !archiveUri.length) {
+    console.warn('No file selected');
+    return;
+  }
+
+  try {
+    fs.createReadStream(archiveUri[0].fsPath)
+      .pipe(unzipper.Parse())
+      .on('entry', function (entry) {
+        if (entry.path === 'data.edn') {
+          console.log('Parsing EDN file');
+          entry.pipe(edn.parseEDNListStream({ mapAs: 'object', keywordAs: 'string' }))
+            .on('data', function (data) {
+              console.log(data);
+              if (data.decks) data.decks.forEach(processDeck);
+            });
+        }
+      });
+  }
+  catch (e) {
+    console.error(e);
+  }
 }
 
 function convertMochiJSON () {
@@ -31,7 +66,11 @@ function processDeck (deck) {
 }
 
 function generateMarkdownForCard (card) {
-  return `## ${card.name}\n\n${card.content}`;
+  // Replace horizontal rulers with empty line
+  let content = card.content.replace('\n---\n', '\n\n');
+  
+  if (content.startsWith('#')) return content;
+  else return `## ${content}`;
 }
 
 function openNewMarkdownDocument (content) {
@@ -53,5 +92,5 @@ const createCommandUrl = (commandName, ...params) => {
 /* EXPORT */
 
 export {
-  createCommandUrl, startRecall, convertMochiJSON,
+  createCommandUrl, startRecall, convertMochiJSON, convertMochiExport
 };
