@@ -38,22 +38,14 @@ class History {
         cards: Promise.resolve({}),
 
         // Writer stream
-        stream: process.stdout
+        stream: null
         // stream: format({ includeEndRowDelimiter: true })
       };
       this.recallHistory[folderPath] = folderHistory;
 
-      // Make sure the log folder exists
-      const logPath = path.join(folderPath, '.recall');
-      fs.mkdirSync(logPath, { recursive: true });
-
-      folderHistory.stream = fs.createWriteStream(
-        path.join(logPath, `recall-${new Date().toISOString().substr(0, 10)}.csv`), 
-        { flags: 'a' } // 'a' means appending (old data will be preserved)
-      );
-
       // Load the history
       // NOTE: the .cards attribute is actually a Promise that resolves to an object
+      const logPath = path.join(folderPath, '.recall');
       folderHistory.cards = this.loadCardHistory(logPath);
 
       return folderHistory.cards;
@@ -109,12 +101,25 @@ class History {
   }
 
   logCardRecall (card, success) {
-    const folderHistory = this.recallHistory[card.rootPath];
+    const folderPath = card.rootPath;
+    const folderHistory = this.recallHistory[folderPath];
     if (!folderHistory) {
-      console.warn('Folder not initialized', card.rootPath);
+      console.warn('Folder not initialized', folderPath);
       return;
     }
 
+    // Lazy initialization of the log stream
+    if (!folderHistory.stream) {
+      // Make sure the log folder exists
+      const logPath = path.join(folderPath, '.recall');
+      fs.mkdirSync(logPath, { recursive: true });
+
+      folderHistory.stream = fs.createWriteStream(
+        path.join(logPath, `recall-${new Date().toISOString().substr(0, 10)}.csv`), 
+        { flags: 'a' } // 'a' means appending (old data will be preserved)
+      );
+    }
+    
     folderHistory.cards.then(cards => {
       const cardHistory = cards[card.checksum] || [];
       // TODO: Update card history
