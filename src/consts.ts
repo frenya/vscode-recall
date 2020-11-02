@@ -27,6 +27,7 @@ const Consts = {
     // date: /\s[1-9][0-9]{3}-[0-9]{2}-[0-9]{2}/;
     date: /\d{4}-\d{2}-\d{2}/g,
     emptyLink: /\[\]\(([^)]*)\)/g,
+    version: /^##\s*(v?[0-9]+\.[0-9]+\.[0-9])/gm,  // For parsing the Changelog
   },
   cardRegexes: {
     header: new RegExp ('^(#)#*', 'gm' ),  // Any header represents a start of a new card

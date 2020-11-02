@@ -3,7 +3,7 @@
   "displayName": "Recall",
   "description": "Spaced repetition flashcards plugin",
   "icon": "resources/logo/recall.png",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "engines": {
     "vscode": "^1.38.0"
@@ -33,6 +33,10 @@
       {
         "command": "recall.convertMochiJSON",
         "title": "Recall: Convert Mochi JSON"
+      },
+      {
+        "command": "recall.convertMochiExport",
+        "title": "Recall: Convert Mochi archive"
       }
     ],
     "configuration": {
@@ -152,6 +156,7 @@
   "dependencies": {
     "absolute": "0.0.1",
     "diff": "^3.5.0",
+    "edn-data": "^0.2.0",
     "fast-csv": "^4.3.2",
     "find-up": "^3.0.0",
     "globby": "^9.2.0",
@@ -162,6 +167,8 @@
     "mkdirp": "^0.5.1",
     "moment": "^2.24.0",
     "pify": "^4.0.1",
-    "string-matches": "^1.1.3"
+    "semver": "^6.3.0",
+    "string-matches": "^1.1.3",
+    "unzipper": "^0.10.11"
   }
 }

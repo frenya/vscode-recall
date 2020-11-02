@@ -5,6 +5,8 @@ import * as vscode from 'vscode';
 import Config from './config';
 import Consts from './consts';
 import Utils from './utils';
+import { open as openWhatsNew } from './views/whatsnew';
+
 // import ViewEmbedded from './views/embedded';
 
 /* ACTIVATE */
@@ -13,10 +15,6 @@ const activate = function ( context: vscode.ExtensionContext ) {
 
   // ViewEmbedded.expanded = Config(null).get('expanded');
 
-  // Render Markdown using internal markdown-it instance
-  // Undocumented, https://github.com/microsoft/vscode/issues/75612
-  // vscode.commands.executeCommand ( 'markdown.api.render', '# Header 1' ).then(console.log);
-  
   Utils.context = context;
   Utils.folder.initRootsRe ();
 
@@ -28,6 +26,8 @@ const activate = function ( context: vscode.ExtensionContext ) {
 
   // Init commands
   Utils.init.commands ( context );
+
+  openWhatsNew();
 };
 
 const deactivate = function () {

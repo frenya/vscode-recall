@@ -71,6 +71,18 @@ recall: bullet
 ---
 ```
 
+# Import from Mochi
+
+To import export files from Mochi, you can run the Recall: Convert Mochi archive command, select a .mochi archive and for every deck in it
+a separate new Markdown file will be created. You can then save it anywhere you want.
+
+If your Mochi deck contains media files (e.g. pictures), they will not be extracted. To extract them, simply unzip the .mochi file into a `media` subfolder
+and correct the links in the Markdown files accordingly. You can find all the links easily by searching for "@media".
+
+In certain cases, the import fails. This is due to a bug in the EDN parser library and would be difficult to correct. As a workaround, it is possible to
+unzip the .mochi file, convert the data.edn file to JSON using [this tool](http://repo.tiye.me/mvc-works/edn-formatter/), open the JSON file in VSCode and
+run the "Recall: Convert Mochi JSON" command.
+
 # Support
 
 - File bugs, feature requests in [GitHub Issues](https://github.com/frenya/vscode-recall/issues)
