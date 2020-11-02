@@ -5,6 +5,7 @@ All notable changes to the "vscode-recall" extension will be documented in this 
 ## v0.3.0
 
 * Added import from Mochi, see README for more details on this
+* Various bug fixes and optimizations
 
 ## v0.2.0
 2020-10-30
