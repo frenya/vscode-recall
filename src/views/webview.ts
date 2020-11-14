@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import Utils from '../utils';
+import { createCommandUrl } from '../commands';
 
 const ARCHIVE_RECALL = 10000;
 
@@ -27,7 +28,8 @@ async function open () {
       // Only allow the webview to access resources in our extension's media directory
       //localResourceRoots: [vscode.Uri.file(path.join(Utils.context.extensionPath, 'src', 'views'))],
       // Enable scripts in the webview
-      enableScripts: true
+      enableScripts: true,
+      enableCommandUris: true,
     }
   );
   Utils.panel = panel;
@@ -89,7 +91,7 @@ async function open () {
   panel.webview.onDidReceiveMessage(
     message => {
       if (message === 'next') {
-        currentCard.nextReviewDate += 60 * 1000;
+        currentCard.nextReviewDate = Date.now() + 60 * 1000;
         showNextCard();
         return;
       }
@@ -188,8 +190,11 @@ async function renderCard (card, pagesShown) {
     return `<div class="${i ? 'back' : 'front'}" style="${i < pagesShown ? '' : 'display: none;'}">${await renderPage(text)}</div>`;
   }));
 
+  const headerDivider = ' \u25B6 ';
+
   return `<div class="preamble">
-    <span><b>${card.root}</b> / ${card.relativePath}</span>
+    <span>${card.recall ? '' : '<span class="label">NEW</span>'}<b>${card.root}</b> / ${card.relativePath}${card.headerPath.length ? headerDivider : ''}${card.headerPath.join(headerDivider)}</span>
+    <span><a href="${createCommandUrl('editFile', card.filePath, card.offset)}">Edit</a></span>
   </div>
   <div class="card">
     ${renderedPages.join('\n')}

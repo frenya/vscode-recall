@@ -40,6 +40,21 @@ const File = {
 
   },
 
+  async openTextFileAtOffset(filepath, offset) {
+
+    filepath = path.normalize(filepath);
+    const fileuri = vscode.Uri.file(filepath);
+
+    const doc = await vscode.workspace.openTextDocument (fileuri);
+    const textEditor = await vscode.window.showTextDocument(doc, { preview: false });
+
+    if ( !textEditor ) return;
+    const pos = doc.positionAt(offset);
+    const selection = new vscode.Selection(pos, pos);
+    textEditor.selection = selection;
+    textEditor.revealRange ( selection, vscode.TextEditorRevealType.Default );
+  },
+
   async read ( filepath ) {
 
     try {

@@ -2,6 +2,15 @@
 
 All notable changes to the "vscode-recall" extension will be documented in this file.
 
+## v0.4.0
+2020-11-14
+
+* Improved flashcard layout
+  * Added section headers to the preamble
+  * Added indication of new flashcards
+  * Added Edit button to the card's preamble
+* Bug fixes and optimizations
+
 ## v0.3.0
 2020-11-02
 

@@ -3,7 +3,7 @@
   "displayName": "Recall",
   "description": "Spaced repetition flashcards plugin",
   "icon": "resources/logo/recall.png",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "license": "MIT",
   "engines": {
     "vscode": "^1.38.0"
@@ -36,6 +36,10 @@
       },
       {
         "command": "recall.convertMochiExport",
+        "title": "Recall: Convert Mochi archive"
+      },
+      {
+        "command": "recall.editFile",
         "title": "Recall: Convert Mochi archive"
       }
     ],

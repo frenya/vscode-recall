@@ -78,6 +78,11 @@ function openNewMarkdownDocument (content) {
     .then((doc: vscode.TextDocument) => vscode.window.showTextDocument(doc, 1, false));
 }
 
+function editFile (filePath, offset) {
+  // console.log(filePath, offset);
+  Utils.file.openTextFileAtOffset(filePath, offset);
+}
+
 /**
  * Returns a command url usable in Markdown strings.
  * 
@@ -92,5 +97,5 @@ const createCommandUrl = (commandName, ...params) => {
 /* EXPORT */
 
 export {
-  createCommandUrl, startRecall, convertMochiJSON, convertMochiExport
+  createCommandUrl, startRecall, convertMochiJSON, convertMochiExport, editFile
 };

@@ -139,7 +139,12 @@ class History {
     });
   }
 
-  async getCardRecall (card) {
+  /**
+   * 
+   * @param card 
+   * @param oldChecksum Optional "old" checksum - usefull when the logic of checksums changes
+   */
+  async getCardRecall (card, oldChecksum?) {
     const folderHistory = this.recallHistory[card.rootPath];
     if (!folderHistory) {
       console.warn('Folder not initialized', card.rootPath);
@@ -147,7 +152,7 @@ class History {
     }
 
     folderHistory.cards.then(cards => {
-      const cardHistory = cards[card.checksum] || [];
+      const cardHistory = cards[card.checksum] || cards[oldChecksum] || [];
 
       cardHistory.forEach(review => {
         const nextReviewDate = new Date(review.timestamp + review.recall * 24 * 3600 * 1000);

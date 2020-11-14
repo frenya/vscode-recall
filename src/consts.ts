@@ -30,9 +30,9 @@ const Consts = {
     version: /^##\s*(v?[0-9]+\.[0-9]+\.[0-9])/gm,  // For parsing the Changelog
   },
   cardRegexes: {
-    header: new RegExp ('^(#)#*', 'gm' ),  // Any header represents a start of a new card
-    bullet: new RegExp ('^(#)#*|^-\\s', 'gm' ),  // Any header or first level bullet point represents a start of a new card
-    asterisk: new RegExp ('^(#)#*|^\\*\\s', 'gm' ),  // Any header or first level bullet point represents a start of a new card
+    header: new RegExp ('^(#+)\\s', 'gm' ),  // Any header represents a start of a new card
+    bullet: new RegExp ('^(#+|-)\\s', 'gm' ),  // Any header or first level bullet point represents a start of a new card
+    asterisk: new RegExp ('^(#+|\\*)\\s', 'gm' ),  // Any header or first level bullet point represents a start of a new card
   }
 };
 

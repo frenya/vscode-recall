@@ -69,6 +69,7 @@ class JS extends Abstract {
     // Parse YAML header (if present), split content and metadata
     const result = metadataParser(content);
     console.log(filePath, JSON.stringify(result.metadata));
+    const contentOffset = content.length - result.content.length;
     content = result.content;
 
     // Determine the level at which cards are recognized
@@ -89,13 +90,17 @@ class JS extends Abstract {
     // Initialize history
     await this.history.addFolder(parsedPath.rootPath);
 
+    // Header hierarchy stack (null is for "header 0")
+    let headerStack = [null];
+
     matches.forEach ( (match, i) => {
       // console.log('Parsing match', match, match.index, content.length)
       let nextCardStart = i + 1 < matches.length ? matches[i + 1].index : content.length;
-      let cardText = _.trim(content.substring(match.index, nextCardStart).replace(cardRegex, '$1'));
+      let cardType = _.trim(match[0]);
+      let cardText = _.trim(content.substring(match.index, nextCardStart).replace(cardRegex, '# '));
 
       // Quick and dirty - distinguish the type of card
-      const isHeader = content[match.index] === '#';
+      const isHeader = cardType[0] === '#';
 
       // console.log(cardText);
 
@@ -113,6 +118,11 @@ class JS extends Abstract {
         cardPages.push(splitPages.shift());
         cardPages.push(splitPages.join('\n'));
       }
+      else {
+        // Update the header stack
+        // Remove all irrelevant headers
+        headerStack.splice(cardType.length);
+      }
 
       // Filter out empty pages
       cardPages = cardPages.filter(text => !!_.trim(text));
@@ -126,15 +136,27 @@ class JS extends Abstract {
           rootPath: parsedPath.rootPath,
           subdirPath: parsedPath.subdirPath,
           relativePath: parsedPath.relativePath,
+          offset: contentOffset + match.index,
+          cardType: cardType,
+          headerPath: _.compact(headerStack),
           checksum: md5(cardPages.join('\n')),
           nextReviewDate: 0,
-          recall: 1,
+          recall: 0,
         };
 
-        this.history.getCardRecall(card);
+        // NOTE: The logic of checksums changed due to replacing all card separators with #
+        const oldChecksum = md5(cardPages.map(x => x.replace(cardRegex, '')).join('\n'));
+        this.history.getCardRecall(card, oldChecksum);
 
         data.push(card);
         this.queue.push(card);
+      }
+
+      // Store header on stack
+      if (isHeader) {
+        headerStack = padArray(headerStack, cardType.length);
+        headerStack.push(cardPages[0].replace(cardRegex, ''));
+        console.log('Header stack:', headerStack);
       }
     });
 
@@ -142,6 +164,11 @@ class JS extends Abstract {
     return data;
   }
 
+}
+
+function padArray(arr: any[], len) {
+  if (arr.length >= len) return arr;
+  else return arr.concat(Array(len - arr.length));
 }
 
 /* EXPORT */
