@@ -21,7 +21,7 @@ class History {
 
   destructor () {
     Object.getOwnPropertyNames(this.recallHistory).forEach(folderPath => {
-      this.recallHistory[folderPath].stream.end();
+      if (this.recallHistory[folderPath].stream) this.recallHistory[folderPath].stream.end();
     });
   }
 

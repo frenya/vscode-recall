@@ -3,7 +3,7 @@
   "displayName": "Recall",
   "description": "Spaced repetition flashcards plugin",
   "icon": "resources/logo/recall.png",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "license": "MIT",
   "engines": {
     "vscode": "^1.38.0"
@@ -40,7 +40,7 @@
       },
       {
         "command": "recall.editFile",
-        "title": "Recall: Convert Mochi archive"
+        "title": "Recall: Edit source file"
       }
     ],
     "configuration": {
@@ -123,7 +123,9 @@
     "main-dist": "json -I -f package.json -e 'this.main=\"./dist/extension.js\"'",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "npm run compile && node ./node_modules/vscode/bin/test",
-    "package": "vsce package && code --install-extension *.vsix"
+    "package": "vsce package && code --install-extension *.vsix",
+    "public-merge": "~/bin/git_public_merge.sh v$npm_package_version",
+    "public-push": "~/bin/git_public_push.sh v$npm_package_version"
   },
   "devDependencies": {
     "@types/glob": "^7.1.1",
