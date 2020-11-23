@@ -2,6 +2,15 @@
 
 All notable changes to the "vscode-recall" extension will be documented in this file.
 
+## v0.5.0
+2020-11-23
+
+* Added random card shuffle at the beginning of the session
+* Emphasized text is now shown in red on card back
+* Added "Struggled" button - will log the review but keep recall
+* Added configuration option to limit number of new cards in a review session
+* Bug fixes and optimizations
+
 ## v0.4.0
 2020-11-14
 

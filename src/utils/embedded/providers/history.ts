@@ -155,7 +155,7 @@ class History {
       const cardHistory = cards[card.checksum] || cards[oldChecksum] || [];
 
       cardHistory.forEach(review => {
-        const nextReviewDate = new Date(review.timestamp + review.recall * 24 * 3600 * 1000);
+        const nextReviewDate = new Date(review.timestamp + review.recall * 24 * 3600 * 1000 + Math.random() * 1000);
         if (nextReviewDate > card.nextReviewDate) {
           card.nextReviewDate = nextReviewDate;
           card.recall = review.recall;

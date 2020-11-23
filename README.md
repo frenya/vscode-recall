@@ -2,7 +2,9 @@
 
 **Recall** is an extension of Microsoft's Visual Studio Code to help you remember stuff using [spaced repetition](https://en.wikipedia.org/wiki/Spaced_repetition).
 
-It creates flashcards directly from your notes and let's you test yourself repeatedly to maximize your memeory retention. This can be usefull when learning a new language, taking a course on a particular subject, remembering jokes or pretty much anything else you want to remember. The choice is yours 😉
+It creates flashcards directly from your Markdown notes and let's you test yourself repeatedly to maximize your memory retention. This can be usefull when learning a new language, taking a course on a particular subject, remembering jokes or pretty much anything else you want to remember. The choice is yours 😉
+
+![Screenshot](resources/img/screenshot.png)
 
 # How does it work?
 
@@ -29,6 +31,19 @@ Notes:
 
 To better understand the above, look at the practical examples in the [demo folder](https://github.com/frenya/vscode-recall/tree/master/demo).
 
+For example, the above screenshot comes from this paragraph
+
+```markdown
+### decir
+
+|Singular|Plural  |
+|--------|--------|
+|decía   |decíamos|
+|decías  |decíais |
+|decía   |decían  |
+```
+
+
 ## Testing yourself
 
 To really train your memory, you should do a daily review of your cards. To run it, simply run the "Recall: Flashcards Test" command in VSCode
@@ -52,7 +67,7 @@ the recall level will be doubled. If you mark it as forgotten, the recall level 
 
 # Configuration
 
-You can find the configuration options in Settings (Extensions -> Recall). The two most important settings are
+You can find the configuration options in Settings (Extensions -> Recall). The three most important settings are
 
 - Default Level - defines at which level to detect flashcards
   - **ignore** - no detection will be done
@@ -60,6 +75,9 @@ You can find the configuration options in Settings (Extensions -> Recall). The t
   - **bullet** - any "-" bullet starts a new card (as well as a header)
   - **asterisk** - any "*" bullet starts a new card (as well as a header)
 - Line Divider - delimiter used in single line cards (use any string that works for you - colon, semicolon, slash, etc.), can even be multi-character sequence
+- New Card Limit - defines the maximum number of new cards allowed in one review session
+  - defaults to 0, i.e. unlimited
+  - you can use it to better pace the learning, e.g. when you add a large number of new cards at the same time
 
 If you need to override the default level of card recognition for a particular file, you can use the YAML header.
 

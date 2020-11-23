@@ -225,12 +225,12 @@ class Abstract {
     return firstCard;
   }
 
-  processReviewResult (card, success) {
-    card.recall = Math.max(1, card.recall * (success ? 2 : 0.5));
+  processReviewResult (card, multiplier) {
+    card.recall = Math.max(1, card.recall * multiplier);
     card.nextReviewDate = Date.now() + card.recall * 24 * 3600 * 1000;
     console.log(card);
 
-    this.history.logCardRecall(card, success);
+    this.history.logCardRecall(card, Math.floor(multiplier));
   }
 
 }

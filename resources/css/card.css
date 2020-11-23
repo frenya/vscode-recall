@@ -85,6 +85,11 @@ body {
   margin: 10px 0;
   font-size: 14px;
 }
+.card .back em {
+  font-style: normal;
+  color: #F66;
+}
+
 .card .buttons {
   border-top: solid 1px #444;
   width: 100%;

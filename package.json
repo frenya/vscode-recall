@@ -3,7 +3,7 @@
   "displayName": "Recall",
   "description": "Spaced repetition flashcards plugin",
   "icon": "resources/logo/recall.png",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "license": "MIT",
   "engines": {
     "vscode": "^1.38.0"
@@ -108,6 +108,11 @@
           "scope": "resource",
           "description": "Divider used in single line cards",
           "default": ":"
+        },
+        "recall.newCardLimit": {
+          "type": "number",
+          "description": "Maximum number of new cards allowed in one review session (0 = unlimited)",
+          "default": 0
         }
       }
     }
@@ -157,6 +162,7 @@
     "flash card",
     "flash cards",
     "productivity",
+    "markdown",
     "mochi"
   ],
   "dependencies": {

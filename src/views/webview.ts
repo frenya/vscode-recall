@@ -5,6 +5,7 @@ import * as _ from 'lodash';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import Config from '../config';
 import Utils from '../utils';
 import { createCommandUrl } from '../commands';
 
@@ -47,10 +48,27 @@ async function open () {
 
   let currentCard = null, pagesShown = 1;
 
+  // Get new card limits from configuration
+  const config = Config(null);
+  let newCardCounter:number = config.get('newCardLimit') || Number.MAX_SAFE_INTEGER, skipNewCardCount = 0;
+
   function showNextCard() {
     currentCard = cardProvider.getNextCard();
     pagesShown = 1;
-    rerender();
+
+    // Limit the number of new cards for review
+    if (!currentCard || currentCard.recall || (newCardCounter-- > 0)) {
+      rerender();
+    }
+    else {
+      skipNewCardCount++
+      skipCard();
+    }
+  }
+
+  function skipCard () {
+    currentCard.nextReviewDate = Date.now() + 24 * 3600 * 1000;
+    showNextCard();
   }
 
   function expandCard() {
@@ -65,7 +83,9 @@ async function open () {
   }
 
   function rerender () {
-    getWebviewContent(styleSrc, 'No cards to review. Well done!', currentCard, pagesShown)
+    let fallbackMessage = [ '<p>No cards to review. Well done!</p>' ];
+    if (skipNewCardCount) fallbackMessage.push(`<p><i>(${skipNewCardCount} new cards were automatically skipped, run the review again to go over them)</i></p>`);
+    getWebviewContent(styleSrc, fallbackMessage.join('\n'), currentCard, pagesShown)
       .then(html => panel.webview.html = replaceRelativeMediaPaths(html))
       .catch(console.error);
   }
@@ -91,8 +111,7 @@ async function open () {
   panel.webview.onDidReceiveMessage(
     message => {
       if (message === 'next') {
-        currentCard.nextReviewDate = Date.now() + 60 * 1000;
-        showNextCard();
+        skipCard();
         return;
       }
 
@@ -106,11 +125,15 @@ async function open () {
           // Don't archive when "forgot" is sent
           if (message === 'forgot') {
             if(currentCard.recall > ARCHIVE_RECALL) currentCard.recall -= ARCHIVE_RECALL;
-            cardProvider.processReviewResult(currentCard, false);
+            cardProvider.processReviewResult(currentCard, 0.5);
+            showNextCard();
+          }
+          else if (message === 'struggled') {
+            cardProvider.processReviewResult(currentCard, 1);
             showNextCard();
           }
           else if (message === 'remembered') {
-            cardProvider.processReviewResult(currentCard, true);
+            cardProvider.processReviewResult(currentCard, 2);
             showNextCard();
           }
         }
@@ -153,6 +176,7 @@ async function getWebviewContent(styleSrc, fallbackMessage, card, pagesShown = 1
         const vscode = acquireVsCodeApi();
         addOnClickHandler('expand');
         addOnClickHandler('remembered');
+        addOnClickHandler('struggled');
         addOnClickHandler('forgot');
 
         function onButtonClick(id) {
@@ -202,8 +226,9 @@ async function renderCard (card, pagesShown) {
       <a id="expand" href="#" class="btn" onclick="console.log">Expand</a>
     </div>
     <div class="buttons" style="${pagesShown === card.pages.length ? '' : 'display: none;'}">
-      <a id="remembered" href="#" class="btn">Remembered</a>
-      <a id="forgot"   href="#" class="btn">Forgot</a>
+      <a id="remembered" href="#" class="btn">Remembered (Enter)</a>
+      <a id="struggled" href="#" class="btn">Struggled</a>
+      <a id="forgot"   href="#" class="btn">Forgot (F)</a>
     </div>
     <div class="buttons" style="${card.recall > ARCHIVE_RECALL ? '' : 'display: none;'}">
       <span class="warning">Press Enter to archive the card.</span>
