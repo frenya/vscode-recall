@@ -51,3 +51,9 @@ the first and second level headers are both shown on the flashcard.
 Answer: Czech Republic
 
 Note: Since there is no empty line between the header and the image, the image will appear on the first page of the card.
+
+## Network images
+
+![Lenna](http://www.lenna.org/len_top.jpg)
+
+Lena Soderberg

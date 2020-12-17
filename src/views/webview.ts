@@ -135,6 +135,10 @@ async function open (filePath?: string) {
 
     // Replacer function - 
     function replacer (match, relPath, offset, str) {
+      // Don't do anything with actual url's
+      if (relPath.match(/^([a-z]+:\/\/)/)) return match;
+
+      // Create webpanel url for local files
       const onDiskPath = path.isAbsolute(relPath) ? relPath : path.join(basePath, subdirPath, relPath);
       return `src="${panel.webview.asWebviewUri(vscode.Uri.file(onDiskPath))}"`;
     }
