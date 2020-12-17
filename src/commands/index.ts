@@ -14,6 +14,16 @@ function startRecall () {
   return openWebview();
 }
 
+function startFileReview () {
+  const doc = vscode.window.activeTextEditor && vscode.window.activeTextEditor.document;
+  if (doc && doc.uri.fsPath) {
+    return openWebview(doc.uri.fsPath);
+  }
+  else {
+    vscode.window.showWarningMessage('No document is currently active!');
+  }
+}
+
 async function convertMochiExport () {
   const options = {
     filters: {
@@ -97,5 +107,5 @@ const createCommandUrl = (commandName, ...params) => {
 /* EXPORT */
 
 export {
-  createCommandUrl, startRecall, convertMochiJSON, convertMochiExport, editFile
+  createCommandUrl, startRecall, startFileReview, convertMochiJSON, convertMochiExport, editFile
 };

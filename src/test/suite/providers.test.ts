@@ -9,7 +9,6 @@ import * as path from 'path';
 
 import Config from '../../config';
 import Utils from '../../utils';
-import { TaskType } from '../../utils/embedded/providers/abstract';
 
 import expectedCards from '../fixtures/tasks2';
 
@@ -19,9 +18,8 @@ suite('Embedded card provider', () => {
 	before(async () => {
     // Get the tasks
     await Utils.embedded.initProvider ();
-    await Utils.embedded.provider.get ( undefined, null );
 
-    filesData = Utils.embedded.provider.filesData;
+    filesData = await Utils.embedded.provider.getFilesData();
 	});
 
   test('cards should be correctly identified', () => {

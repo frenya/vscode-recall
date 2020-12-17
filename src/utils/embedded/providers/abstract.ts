@@ -2,67 +2,14 @@
 /* IMPORT */
 
 import * as _ from 'lodash';
-import * as querystring from 'querystring';
 import * as vscode from 'vscode';
 import Config from '../../../config';
-// import EmbeddedView from '../../../views/embedded';
+import File from '../../file';
 import Folder from '../../folder';
-import History from './history';
 
 /* ABSTRACT */
 
 export const pathNormalizer = filePath => filePath.replace ( /\\/g, '/' ).normalize();
-
-/**
- * Type of task extracted from a Markdown document.
- */
-export interface TaskType {
-  todo: string;
-
-  /** Task owner mention (including the "@"" character) */
-  owner: string;
-
-  /** True when task owner matches workspace user */
-  myself: boolean;
-
-  /** This is the actual text of the task (without the user mention) */
-  message: string;
-  code: string;
-
-  /** Line in the original document including all whitespace */
-  rawLine: string;
-
-  line: string;
-
-  /** Line number in the document, zero based */
-  lineNr: number;
-
-  /** Fully qualified file path */
-  filePath: string;
-
-  /** Workspace folder name */
-  root: string;
-
-  /** Workspace folder path */
-  rootPath: string;
-
-  /** Relative path of the document within its workspace folder */
-  relativePath: string;
-
-  /** Due date string in the YYYY-MM-DD format */
-  dueDate?: string;
-
-  /** When synced to external service, the url identifying the task in the external service */
-  externalURL?: string;
-
-  /** Link to the line in the original document */
-  backlinkURL?: string;
-
-  /** Local sync settings (combination of workspace, folder and task owner's settings) */
-  sync?: {
-    command?: string;
-  };
-}
 
 
 class Abstract {
@@ -71,166 +18,181 @@ class Abstract {
   exclude = undefined;
   rootPaths = undefined;
   filesData = undefined; // { [filePath]: todo[] | undefined }
-  queue = [];
-  watcher: vscode.FileSystemWatcher = undefined;
+  watchers: vscode.FileSystemWatcher[] = [];
 
-  history: History;
+  globMatch: Function = null;
 
-  constructor() {
-    this.history = new History();
-  }
+  filesDataChanged: vscode.EventEmitter<any> = new vscode.EventEmitter ();
+  onFilesDataChanged: vscode.Event<any> = this.filesDataChanged.event;
 
-  async get ( rootPaths = Folder.getAllRootPaths (), filter ) {
+  constructor () {
 
-    rootPaths = _.castArray ( rootPaths );
+    this.rootPaths = _.castArray(Folder.getAllRootPaths ());
 
     const config = Config(null);
     this.include = config.get('include');
     this.exclude = config.get('exclude');
 
-    if ( !this.filesData || !_.isEqual ( this.rootPaths, rootPaths ) ) {
-
-      this.rootPaths = rootPaths;
-      this.unwatchPaths ();
-      await this.initFilesData ( rootPaths );
-      this.watchPaths ();
-
-    } else {
-
-      await this.updateFilesData ();
-
-    }
-
-    return this.getTodos ( filter );
+    vscode.workspace.onDidChangeConfiguration ( () => {
+      console.warn('Configuration has changed, maybe I should do something about it!');
+    });
 
   }
 
+  //#region Watching
+
   async watchPaths () {
-
-    /* HANDLERS */
-
-    // TODO: Signal the webview to refresh
-    // const refresh = _.debounce ( () => EmbeddedView.refresh (), 250 );
-    const refresh = () => {};
-
-    const add = event => {
-      if ( !this.filesData ) return;
-      const filePath = pathNormalizer ( event.fsPath );
-      if ( this.filesData.hasOwnProperty ( filePath ) ) return;
-      if ( !this.isIncluded ( filePath ) ) return;
-      this.filesData[filePath] = undefined;
-      refresh ();
+    const invalidate = (filePath, content) => {
+      console.warn('Invalidating file', filePath);
+      if (!this.isIncluded(filePath)) return;
+      this.invalidateFileData(pathNormalizer(filePath), content);
     };
-
-    const change = event => {
-      if ( !this.filesData ) return;
-      const filePath = pathNormalizer ( event.fsPath );
-      if ( !this.isIncluded ( filePath ) ) return;
-      this.filesData[filePath] = undefined;
-      refresh ();
-    };
-
-    const unlink = event => {
-      if ( !this.filesData ) return;
-      const filePath = pathNormalizer ( event.fsPath );
-      delete this.filesData[filePath];
-      refresh ();
-    };
-
-    /* WATCHING */
 
     this.include.forEach ( glob => {
+      let watcher = vscode.workspace.createFileSystemWatcher ( glob );
 
-      this.watcher = vscode.workspace.createFileSystemWatcher ( glob );
+      watcher.onDidCreate( e => invalidate(e.fsPath, null) );
+      watcher.onDidChange( e => invalidate(e.fsPath, null) );
 
-      this.watcher.onDidCreate ( add );
-      this.watcher.onDidChange ( change );
-      this.watcher.onDidDelete ( unlink );
+      // Populating the file with empty content is as good as deleting
+      watcher.onDidDelete( e => invalidate(e.fsPath, '') );
 
+      this.watchers.push(watcher);
     });
-
   }
 
   unwatchPaths () {
-
-    if ( !this.watcher ) return;
-
-    this.watcher.dispose ();
-
-  }
-
-  getIncluded ( filePaths ) {
-
-    const micromatch = require ( 'micromatch' ); // Lazy import for performance
-
-    return micromatch ( filePaths, this.include, { ignore: this.exclude, dot: true } );
-
+    this.watchers.forEach(watcher => watcher.dispose());
+    this.watchers = [];
   }
 
   isIncluded ( filePath ) {
+    if (!this.globMatch) {
+      const mm = require ( 'micromatch' ); // Lazy import for performance
+      this.globMatch = mm.matcher(this.include, { ignore: this.exclude, dot: true });
+    }
 
-    return !!this.getIncluded ([ filePath ]).length;
-
+    return !!this.globMatch(filePath);
   }
 
-  async initFilesData ( rootPaths ) {
+  //#endregion
 
-    this.filesData = {};
-    this.queue = [];
+  /**
+   * Initialized the .filesData object with undefined attributes corresponding with the relevant file paths.
+   * Must be followed by updateFilesData to actually contain the tasks.
+   */
+  async initFilesData () {
+    const globby = require ( 'globby' ); // Lazy import for performance
+    const filePaths = _.flatten ( await Promise.all ( this.rootPaths.map ( cwd => globby ( this.include, { cwd, ignore: this.exclude, dot: true, absolute: true } ) ) ) );
 
+    // This creates a map of url's to file data i.e. an object like { <filePath>: any }
+    // with the values of all attributes set to "undefined"
+    //
+    // In other words, at the beginning, all applicable files are recorded but their content is invalidated
+    this.filesData = _.zipObject(_.map(filePaths, pathNormalizer), []);
+
+    console.log('Initialized filesData', this.filesData);
   }
 
-  async updateFilesData () {}
+  /**
+   * Populate filesData with actual parsed content and return the resulting object.
+   * This method is immune to this.filesData being reset in the process.
+   * 
+   * @param {Function} filterFn File path filter function. If it returns false, file is skipped.
+   */
+  async getFilesData (filterFn?: Function) {
+    // Initialize filesData if necessary
+    if (!this.filesData) {
+      this.unwatchPaths ();
+      await this.initFilesData();
+      this.watchPaths ();  
+    }
 
-  getTodos ( filter ) {
+    // Store local reference to filesData since the class atribute may get overwritten
+    // console.log('Using filesData', JSON.stringify(this.filesData));
+    let filesData = this.filesData;
 
-    if ( _.isEmpty ( this.filesData ) ) return;
+    await Promise.all (_.map(filesData, async (val, filePath /* already normalized */) => {
+      // Only attributes (filenames) with no value need updating
+      if ( val ) return;
 
-    const todos = {}, // { [ROOT] { [TYPE] => [DATA] } }
-          filePaths = Object.keys ( this.filesData );
+      // Don't waste time parsing any files that would be filtered out anyway
+      if (filterFn && !filterFn(filePath)) return;
 
-    const addTodo = (todo, root, owner) => {
-      if (!todos[root]) todos[root] = {};
-      if (!todos[root][owner]) todos[root][owner] = [];
-      todos[root][owner].push(todo);
+      // Extract tasks from file and update value
+      filesData[filePath] = await this.extractFileData(filePath);
+    }));
+
+    return filterFn ? _.pickBy(filesData, (val, key) => filterFn(key)) : filesData;
+  }
+
+  /**
+   * Populate filesData with actual parsed content and return the resulting object.
+   * This method is immune to this.filesData being reset in the process.
+   */
+  async getFileData (filePath) {
+    // Initialize filesData if necessary
+    if (!this.filesData) {
+      this.unwatchPaths ();
+      await this.initFilesData();
+      this.watchPaths ();  
+    }
+
+    filePath = pathNormalizer(filePath);
+    return this.filesData[filePath] || await this.extractFileData(filePath);
+  }
+
+  // Method to emit debounced refresh event
+  refresh = _.debounce (() => { this.filesDataChanged.fire(); }, 750);
+
+  invalidateFileData (filePath, content) {
+    // Sanity check (in case this.filesData hasn't been initialized yet)
+    if (!this.filesData) return;
+
+    filePath = pathNormalizer(filePath);
+
+    // If content was provided, parse it and store it
+    if (content == null) this.filesData[filePath] = undefined; // tslint:disable-line:triple-equals 
+    else {
+      const parsedPath = Folder.parsePath(filePath);
+      this.filesData[filePath] = this.parseContent(content, this.filesData[filePath] || this.emptyFileData(filePath));
+    }
+
+    this.refresh();
+
+    return this.filesData[filePath];
+  }
+
+  // Override to add extra elements, such as config attributes
+  // using Config(vscode.Uri.file(filePath));
+  emptyFileData (filePath) {
+    return Folder.parsePath(filePath);
+  }
+
+  /**
+   * Load file content from disk and update file data
+   * @param filePath Normalized file path of the document to process
+   * @returns Object file metadata and parsed content 
+   */
+  async extractFileData ( filePath ): Promise<Object> {
+    console.log('Parsing file ', filePath);
+    let content = await File.read ( filePath );
+    return this.invalidateFileData(filePath, content);
+  }
+
+  /**
+   * This method is responsible for parsing the content and returning whatever
+   * data structure the extension needs for further processing.
+   * 
+   * @param {String} content the content of the file (e.g. Markdown text including YAML front matter)
+   * @param {Object} fileData the original fileData object
+   * @returns The fileData object populated by the parsed content in .data plus optional metadata extracted from the YAML front matter
+   */
+  parseContent (content, fileData): any {
+    return {
+      ...fileData,
+      data: [],
     };
-
-    filePaths.map(pathNormalizer).forEach ( filePath => {
-      // Get the tasks in a file, return if empty
-      const data = this.filesData[filePath];
-      if ( !data || !data.length ) return;
-
-      data.forEach ( datum => {
-        if ( filter && !filter(datum) ) return;
-
-        addTodo(datum, datum.root || '', datum.owner || '');
-
-        // Use labels to add the task to other folders too
-        if (datum.label) {
-          addTodo(datum, datum.label, datum.owner || '');
-          if ( !todos[datum.label] ) todos[datum.label] = {};
-        }
-      });
-
-    });
-
-    const roots = Object.keys ( todos );
-
-    return roots.length > 1 ? todos : { '': todos[roots[0]] };
-
-  }
-
-  getNextCard () {
-    const firstCard = _.minBy (_.filter(this.queue, card => card.nextReviewDate <= Date.now()), 'nextReviewDate');
-    return firstCard;
-  }
-
-  processReviewResult (card, multiplier) {
-    card.recall = Math.max(1, card.recall * multiplier);
-    card.nextReviewDate = Date.now() + card.recall * 24 * 3600 * 1000;
-    console.log(card);
-
-    this.history.logCardRecall(card, Math.floor(multiplier));
   }
 
 }

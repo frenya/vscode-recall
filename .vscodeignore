@@ -12,7 +12,9 @@ out/**
 coverage/
 src/
 demo/
-resources/*.sketch
+mochi/**
+**/*.sketch
+**/*.zip
 webpack.config.js
 coverconfig.json
 prettier.config.js

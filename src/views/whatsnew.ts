@@ -16,7 +16,6 @@ export async function open () {
   const lastVersion = Utils.getContextValue(VersionKey) || 'v0.0.0';
 
   // Parse Changelog and see if there are any new changes
-  // TODO: Get lastVersion from context
   const changes = await parseChangelog(lastVersion);
   if (!changes.length) return;
 

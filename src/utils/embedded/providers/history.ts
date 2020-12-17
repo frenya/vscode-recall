@@ -32,14 +32,13 @@ class History {
    */
   async addFolder (folderPath: string) {
     if (!this.recallHistory[folderPath]) {
-      console.log('Setting recall history', folderPath);
+      console.log('Setting up recall history for folder', folderPath);
       const folderHistory = {
         // Object with card review history
         cards: Promise.resolve({}),
 
         // Writer stream
         stream: null
-        // stream: format({ includeEndRowDelimiter: true })
       };
       this.recallHistory[folderPath] = folderHistory;
 
@@ -47,9 +46,8 @@ class History {
       // NOTE: the .cards attribute is actually a Promise that resolves to an object
       const logPath = path.join(folderPath, '.recall');
       folderHistory.cards = this.loadCardHistory(logPath);
-
-      return folderHistory.cards;
     }
+    return this.recallHistory[folderPath].cards;
   }
 
   /* async - essentially, returns Promise*/ 
@@ -67,7 +65,7 @@ class History {
           .transform(row => ({
             checksum: row.checksum,
             timestamp: timestamp,
-            success: !!parseInt(row.success),
+            success: parseInt(row.success),
             recall: parseInt(row.recall),
           }))
           .on('error', reject)
@@ -83,12 +81,12 @@ class History {
   }
 
   async loadCardHistory (logPath) {
+    // Sanity check
+    if (!fs.existsSync(logPath)) return {};
+    
     // Load all existing history files
     const globby = require('globby'); // Lazy import for performance
     const files = await globby('recall-*.csv', { cwd: logPath, absolute: true });
-    // console.log('Reading history files', files);
-
-    // console.log('Recall history set', logPath);
 
     const historyLog:RowType[] = _.flatten(await Promise.all(files.map(this.loadCardHistoryCSV)));
 
@@ -100,7 +98,7 @@ class History {
     }, {});
   }
 
-  logCardRecall (card, success) {
+  logCardRecall (card, multiplier) {
     const folderPath = card.rootPath;
     const folderHistory = this.recallHistory[folderPath];
     if (!folderHistory) {
@@ -121,17 +119,16 @@ class History {
     }
     
     folderHistory.cards.then(cards => {
-      const cardHistory = cards[card.checksum] || [];
-      // TODO: Update card history
+      // Update card history
+      if (!cards[card.checksum]) cards[card.checksum] = [];
+      cards[card.checksum].push({ timestamp: Date.now(), success: multiplier, recall: card.recall});
 
-      console.log('Card history for ', card.rootPath, cards);
-  
-      const csvData = [card.checksum, success ? 1 : 0, card.recall];
+      const csvData = [card.checksum, multiplier, card.recall];
       console.log('Writing card to log', card, csvData);
   
       try {
         const result = folderHistory.stream.write(csvData.join(',') + '\n');
-        console.log('Write result', result);
+        // console.log('Write result', result);
       }
       catch (e) {
         console.error(e);
@@ -144,7 +141,7 @@ class History {
    * @param card 
    * @param oldChecksum Optional "old" checksum - usefull when the logic of checksums changes
    */
-  async getCardRecall (card, oldChecksum?) {
+  async getCardRecall (card) {
     const folderHistory = this.recallHistory[card.rootPath];
     if (!folderHistory) {
       console.warn('Folder not initialized', card.rootPath);
@@ -152,13 +149,14 @@ class History {
     }
 
     folderHistory.cards.then(cards => {
-      const cardHistory = cards[card.checksum] || cards[oldChecksum] || [];
+      const cardHistory = cards[card.checksum] || cards[card.checksumPure] || [];
 
       cardHistory.forEach(review => {
-        const nextReviewDate = new Date(review.timestamp + review.recall * 24 * 3600 * 1000 + Math.random() * 1000);
+        const nextReviewDate = review.timestamp + review.recall * 24 * 3600 * 1000 + Math.random() * 1000;
         if (nextReviewDate > card.nextReviewDate) {
           card.nextReviewDate = nextReviewDate;
           card.recall = review.recall;
+          card.success = review.success;
         }
       }, { nextReviewDate: 0 });
     });

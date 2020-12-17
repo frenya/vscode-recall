@@ -8,16 +8,24 @@ import * as vscode from 'vscode';
 import Config from '../config';
 import Utils from '../utils';
 import { createCommandUrl } from '../commands';
+import { badgeUrlFile } from '../decorators';
 
 const ARCHIVE_RECALL = 10000;
 
-async function open () {
+async function open (filePath?: string) {
 
   // Only allow one instance to exist
   // see https://code.visualstudio.com/api/extension-guides/webview#visibility-and-moving
   if (Utils.panel) {
-    Utils.panel.reveal();
-    return;
+    // If, for any reason, the reveal doesn't work
+    // just continue with creating new webview
+    try {
+      Utils.panel.reveal();
+      return;
+    }
+    catch (e) {
+      console.warn(e);
+    }
   }
 
   // Create and show panel
@@ -44,7 +52,12 @@ async function open () {
   await Utils.embedded.initProvider ();
   let cardProvider = Utils.embedded.provider;
 
-  await cardProvider.get ( undefined, null );
+  // Status bar counters
+  let currentCardIndex = 0, totalCards = 0;
+  let statusBarMessage: vscode.Disposable = null;
+
+  const filterFn = (fp) => (fp === filePath);
+  let queue = [];
 
   let currentCard = null, pagesShown = 1;
 
@@ -52,22 +65,38 @@ async function open () {
   const config = Config(null);
   let newCardCounter:number = config.get('newCardLimit') || Number.MAX_SAFE_INTEGER, skipNewCardCount = 0;
 
+  // Ignore the limit when testing a single file
+  if (filePath) newCardCounter = Number.MAX_SAFE_INTEGER;
+
+  await loadData();
+
+  function getNextCard () {
+    const firstCard = _.minBy (_.filter(queue, isCardDue), 'nextReviewDate');
+    return firstCard;
+  }
+
   function showNextCard() {
-    currentCard = cardProvider.getNextCard();
+    currentCard = getNextCard();
     pagesShown = 1;
+    if (currentCard) currentCardIndex++;
 
     // Limit the number of new cards for review
     if (!currentCard || currentCard.recall || (newCardCounter-- > 0)) {
       rerender();
     }
     else {
-      skipNewCardCount++
+      skipNewCardCount++;
       skipCard();
     }
   }
 
   function skipCard () {
-    currentCard.nextReviewDate = Date.now() + 24 * 3600 * 1000;
+    // This isn't good - for many reasons
+    // currentCard.nextReviewDate = Date.now() + 24 * 3600 * 1000;
+
+    // Remove the card from queue
+    _.pull(queue, currentCard);
+
     showNextCard();
   }
 
@@ -83,8 +112,17 @@ async function open () {
   }
 
   function rerender () {
+    // Fallback message
     let fallbackMessage = [ '<p>No cards to review. Well done!</p>' ];
     if (skipNewCardCount) fallbackMessage.push(`<p><i>(${skipNewCardCount} new cards were automatically skipped, run the review again to go over them)</i></p>`);
+
+    // Show progress of the review
+    console.log('New cards left', newCardCounter, 'Showing card', currentCard);
+    if (statusBarMessage) statusBarMessage.dispose();
+    let newCardsMessage = newCardCounter < totalCards ? `, ${newCardCounter} new cards left` : '';
+    if (newCardCounter < 0) newCardsMessage = skipNewCardCount ?  `, skipped ${skipNewCardCount} new cards` : '';
+    statusBarMessage = vscode.window.setStatusBarMessage(`Reviewing card ${currentCardIndex} of ${totalCards}${newCardsMessage}`);
+
     getWebviewContent(styleSrc, fallbackMessage.join('\n'), currentCard, pagesShown)
       .then(html => panel.webview.html = replaceRelativeMediaPaths(html))
       .catch(console.error);
@@ -101,11 +139,43 @@ async function open () {
       return `src="${panel.webview.asWebviewUri(vscode.Uri.file(onDiskPath))}"`;
     }
   
-    return html.replace(/src="([^"]*)"/, replacer);
+    return html.replace(/src="([^"]*)"/g, replacer);
   
   }
   
   showNextCard();
+
+  Utils.embedded.provider.onFilesDataChanged(refresh);
+
+  async function refresh () {
+    console.warn('Refreshing webview ...');
+    // To make sure we are counting new cards correctly
+    // - reset the skip count (to avoid counting them multiple times)
+    // - increment newCardCounter if current card is new
+    skipNewCardCount = 0;
+    if (currentCard && currentCard.state === 'NEW') newCardCounter++;
+
+    // Show loading message
+    panel.webview.html = await getWebviewContent(styleSrc, 'Reloading ...', null);
+  
+    await loadData();
+    showNextCard();
+  }
+
+  // Reload the card deck and reset related variables
+  async function loadData () {
+    const allCards = await cardProvider.getCards(filePath ? filterFn : null);
+    queue = allCards.filter(isCardDue);
+
+    // Status bar counters
+    currentCardIndex = 0;
+    // let newCardsCount = queue.filter(card => card.recall === 0).length;
+    totalCards = queue.length /*- (newCardsCount - Math.min(newCardsCount, newCardCounter)) */;
+  }
+
+  function isCardDue(card) {
+    return card.nextReviewDate <= Date.now();
+  }
 
   // Handle messages from the webview
   panel.webview.onDidReceiveMessage(
@@ -114,6 +184,11 @@ async function open () {
         skipCard();
         return;
       }
+
+      // The following piece of code became ugly AF over time
+      // TODO: extract to separate function
+      // TODO: create unit tests
+      // TODO: rethink the logic and refactor
 
       // console.log(message);
       if(pagesShown < currentCard.pages.length) {
@@ -124,15 +199,18 @@ async function open () {
         else {
           // Don't archive when "forgot" is sent
           if (message === 'forgot') {
-            if(currentCard.recall > ARCHIVE_RECALL) currentCard.recall -= ARCHIVE_RECALL;
+            if(currentCard.recall >= ARCHIVE_RECALL) currentCard.recall -= ARCHIVE_RECALL;
             cardProvider.processReviewResult(currentCard, 0.5);
             showNextCard();
           }
           else if (message === 'struggled') {
+            if(currentCard.recall >= ARCHIVE_RECALL) currentCard.recall -= ARCHIVE_RECALL;
             cardProvider.processReviewResult(currentCard, 1);
             showNextCard();
           }
           else if (message === 'remembered') {
+            // This is an ugly hack to make sure the archived cards have recall of exactly ARCHIVE_RECALL
+            if(currentCard.recall >= ARCHIVE_RECALL) currentCard.recall = ARCHIVE_RECALL / 2;
             cardProvider.processReviewResult(currentCard, 2);
             showNextCard();
           }
@@ -145,10 +223,8 @@ async function open () {
 
   panel.onDidDispose(
     () => {
+      if (statusBarMessage) statusBarMessage.dispose();
       Utils.panel = null;
-
-      Utils.embedded.provider.history.destructor();
-      Utils.embedded.provider = undefined;
     },
     null,
     Utils.context.subscriptions
@@ -157,8 +233,6 @@ async function open () {
 }
 
 async function getWebviewContent(styleSrc, fallbackMessage, card, pagesShown = 1) {
-  console.log('Showing card', card);
-
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -217,7 +291,7 @@ async function renderCard (card, pagesShown) {
   const headerDivider = ' \u25B6 ';
 
   return `<div class="preamble">
-    <span>${card.recall ? '' : '<span class="label">NEW</span>'}<b>${card.root}</b> / ${card.relativePath}${card.headerPath.length ? headerDivider : ''}${card.headerPath.join(headerDivider)}</span>
+    <span><img class="label" src="${badgeUrlFile(card.state, 13)}" alt="${card.state}"></img> <b>${card.root}</b> / ${card.relativePath}${card.headerPath.length ? headerDivider : ''}${card.headerPath.join(headerDivider)}</span>
     <span><a href="${createCommandUrl('editFile', card.filePath, card.offset)}">Edit</a></span>
   </div>
   <div class="card">
@@ -230,7 +304,7 @@ async function renderCard (card, pagesShown) {
       <a id="struggled" href="#" class="btn">Struggled</a>
       <a id="forgot"   href="#" class="btn">Forgot (F)</a>
     </div>
-    <div class="buttons" style="${card.recall > ARCHIVE_RECALL ? '' : 'display: none;'}">
+    <div class="buttons" style="${card.recall >= ARCHIVE_RECALL ? '' : 'display: none;'}">
       <span class="warning">Press Enter to archive the card.</span>
     </div>
   </div>

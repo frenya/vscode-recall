@@ -78,15 +78,17 @@ const Folder = {
     if ( match ) { // Interal path
 
       return {
+        filePath,
         root: path.basename ( match[1] ),
         rootPath: match[1],
         subdirPath: path.dirname(match[2]),
-        relativePath: path.basename(match[2]) // Actually just the filename
+        relativePath: path.basename(match[2])
       };
 
     } else { // External path
 
       return {
+        filePath,
         root: path.basename ( path.dirname ( filePath ) ),
         rootPath: path.dirname ( filePath ),
         subdirPath: '',

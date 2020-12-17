@@ -67,7 +67,7 @@ the recall level will be doubled. If you mark it as forgotten, the recall level 
 
 # Configuration
 
-You can find the configuration options in Settings (Extensions -> Recall). The three most important settings are
+You can find the configuration options in Settings (Extensions -> Recall). Pay extra attention to these configuration options
 
 - Default Level - defines at which level to detect flashcards
   - **ignore** - no detection will be done
@@ -78,6 +78,7 @@ You can find the configuration options in Settings (Extensions -> Recall). The t
 - New Card Limit - defines the maximum number of new cards allowed in one review session
   - defaults to 0, i.e. unlimited
   - you can use it to better pace the learning, e.g. when you add a large number of new cards at the same time
+- Hide badges - as card are detected in the text, the editor adds a small badge with the card's state (NEW, GOOD, HARD, etc.) depending on the review results. This gives you the option to hide certain states if you wish, or even all of them.
 
 If you need to override the default level of card recognition for a particular file, you can use the YAML header.
 

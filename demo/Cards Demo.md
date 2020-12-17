@@ -10,6 +10,8 @@ This is the first paragraph. It will become the second page of the card
 This is the second paragraph. It is separated from the first one by an empty line.
 It will become the third page of the card.
 
+It is possible to *emphasize* text using standard Markdown notation.
+
 # Memory card with some text and bullets
 
 This is an explanatory text. It will become page 2 of the card.
@@ -39,9 +41,9 @@ the first and second level headers are both shown on the flashcard.
 
 |Singular|Plural|
 |-|-|
-|estuve |estuvimos|
-|estuviste |estuvisteis|
-|estuvo |estuvieron|
+|est*uve* |est*uvi*mos|+
+|est*uvi*ste |est*uvi*steis|
+|est*uvo* |est*uvie*ron|
 
 ## Whose flag is this?
 ![Flag](media/cz_flag.png)

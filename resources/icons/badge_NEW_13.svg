@@ -1,0 +1,16 @@
+<svg width="24.5" height="13" viewBox="0 0 377 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="NEW">
+  <title>NEW</title>
+  <linearGradient id="a" x2="0" y2="100%">
+    <stop offset="0" stop-opacity=".1" stop-color="#EEE"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <mask id="m"><rect width="377" height="200" rx="30" fill="#FFF"/></mask>
+  <g mask="url(#m)">
+    <rect width="377" height="200" fill="#08C" x="0"/>
+    <rect width="377" height="200" fill="url(#a)"/>
+  </g>
+  <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
+    <text x="65" y="148" textLength="262" fill="#000" opacity="0.25">NEW</text>
+    <text x="55" y="138" textLength="262">NEW</text>
+  </g>
+</svg>
