@@ -3,7 +3,7 @@
   "displayName": "Recall",
   "description": "Spaced repetition flashcards plugin",
   "icon": "resources/logo/recall.png",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "license": "MIT",
   "engines": {
     "vscode": "^1.38.0"
@@ -138,7 +138,6 @@
     "test-compile": "npm run main-out && tsc -p ./",
     "main-out": "json -I -f package.json -e 'this.main=\"./out/extension.js\"'",
     "main-dist": "json -I -f package.json -e 'this.main=\"./dist/extension.js\"'",
-    "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "npm run compile && node ./node_modules/vscode/bin/test",
     "package": "vsce package && code --install-extension *.vsix",
     "public-merge": "~/bin/git_public_merge.sh v$npm_package_version",

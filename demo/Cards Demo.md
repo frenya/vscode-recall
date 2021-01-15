@@ -35,6 +35,19 @@ two pages, otherwise what's the point? ;)
 Any header can start a new card. This one demonstrates how
 the first and second level headers are both shown on the flashcard.
 
+### Using spaces
+
+Markdown makes use  
+of trailing spaces.
+ 
+Putting two spaces at the end of a line  
+serves as a line break within a paragraph.
+ 
+You can also use it to prevent an empty line from being a card page break.
+Just put a single space on it and it will be ignored.
+ 
+Make sure to set the `files.trimTrailingWhitespace` setting to `false`.
+
 # Rich content - tables, images
 
 ## Preterite: estar
@@ -57,3 +70,24 @@ Note: Since there is no empty line between the header and the image, the image w
 ![Lenna](http://www.lenna.org/len_top.jpg)
 
 Lena Soderberg
+
+# Code
+
+## Hello World JS
+
+```javascript
+const http = require('http');
+
+const hostname = '127.0.0.1';
+const port = 3000;
+
+const server = http.createServer((req, res) => {
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain');
+  res.end('Hello World');
+});
+
+server.listen(port, hostname, () => {
+  console.log(`Server running at http://${hostname}:${port}/`);
+});
+```

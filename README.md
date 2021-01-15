@@ -43,6 +43,8 @@ For example, the above screenshot comes from this paragraph
 |decía   |decían  |
 ```
 
+Note: If you want to prevent a page break, put a single space on the line. Make sure you have the `files.trimTrailingWhitespace` set to `false`,
+otherwise it will get removed when saving the file.
 
 ## Testing yourself
 
@@ -78,7 +80,7 @@ You can find the configuration options in Settings (Extensions -> Recall). Pay e
 - New Card Limit - defines the maximum number of new cards allowed in one review session
   - defaults to 0, i.e. unlimited
   - you can use it to better pace the learning, e.g. when you add a large number of new cards at the same time
-- Hide badges - as card are detected in the text, the editor adds a small badge with the card's state (NEW, GOOD, HARD, etc.) depending on the review results. This gives you the option to hide certain states if you wish, or even all of them.
+- Hide badges - as card are detected in the text, the editor adds a small badge with the card's state (NEW, GOOD, HARD, etc.) depending on the review results. This setting gives you the option to hide certain states if you wish, or even all of them.
 
 If you need to override the default level of card recognition for a particular file, you can use the YAML header.
 

@@ -79,6 +79,9 @@ class JS extends Abstract {
         cardPages.push(splitPages.join('\n'));
       }
       else {
+        // Remove page breaks within code blocks
+        coalesceCodeBlocks(cardPages);
+
         // Update the header stack
         // Remove all irrelevant headers
         headerStack.splice(cardType.length);
@@ -165,6 +168,33 @@ class JS extends Abstract {
 function padArray(arr: any[], len) {
   if (arr.length >= len) return arr;
   else return arr.concat(Array(len - arr.length));
+}
+
+function coalesceCodeBlocks (cardPages: string[]) {
+  // Find opening and closing block pages
+  let codeBlockRanges = []; // [[startIndex, endIndex, length], ...]
+  let startIndex = -1;
+  cardPages.forEach((pageText, i) => {
+    if (isCodeBlockBoundary(pageText)) {
+      if (startIndex >= 0) {
+        codeBlockRanges.push([ startIndex, i + 1, i - startIndex + 1 ]);
+        startIndex = -1;
+      }
+      else startIndex = i;
+    }
+  });
+
+  // Coalesce the pages into one
+  while (codeBlockRanges.length) {
+    const range = codeBlockRanges.pop();
+    cardPages.splice(range[0], range[2], cardPages.slice(range[0], range[1]).join('\n\n'));
+  }
+}
+
+function isCodeBlockBoundary (text: string) {
+  const codeBlockRegex = /^```/gm;
+
+  return stringMatches(text, codeBlockRegex).length % 2;
 }
 
 /* EXPORT */

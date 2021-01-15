@@ -43,11 +43,8 @@ async function open (filePath?: string) {
   );
   Utils.panel = panel;
 
-  const onDiskPath = vscode.Uri.file(path.join(Utils.context.extensionPath, 'resources', 'css', 'card.css'));
-  const styleSrc = panel.webview.asWebviewUri(onDiskPath);
-
   // Show loading message
-  panel.webview.html = await getWebviewContent(styleSrc, 'Loading ...', null);
+  panel.webview.html = await getWebviewContent(panel, 'Loading ...', null);
 
   await Utils.embedded.initProvider ();
   let cardProvider = Utils.embedded.provider;
@@ -123,7 +120,7 @@ async function open (filePath?: string) {
     if (newCardCounter < 0) newCardsMessage = skipNewCardCount ?  `, skipped ${skipNewCardCount} new cards` : '';
     statusBarMessage = vscode.window.setStatusBarMessage(`Reviewing card ${currentCardIndex} of ${totalCards}${newCardsMessage}`);
 
-    getWebviewContent(styleSrc, fallbackMessage.join('\n'), currentCard, pagesShown)
+    getWebviewContent(panel, fallbackMessage.join('\n'), currentCard, pagesShown)
       .then(html => panel.webview.html = replaceRelativeMediaPaths(html))
       .catch(console.error);
   }
@@ -149,7 +146,7 @@ async function open (filePath?: string) {
   
   showNextCard();
 
-  Utils.embedded.provider.onFilesDataChanged(refresh);
+  const refreshListener = Utils.embedded.provider.onFilesDataChanged(refresh);
 
   async function refresh () {
     console.warn('Refreshing webview ...');
@@ -160,7 +157,7 @@ async function open (filePath?: string) {
     if (currentCard && currentCard.state === 'NEW') newCardCounter++;
 
     // Show loading message
-    panel.webview.html = await getWebviewContent(styleSrc, 'Reloading ...', null);
+    panel.webview.html = await getWebviewContent(panel, 'Reloading ...', null);
   
     await loadData();
     showNextCard();
@@ -228,6 +225,7 @@ async function open (filePath?: string) {
   panel.onDidDispose(
     () => {
       if (statusBarMessage) statusBarMessage.dispose();
+      if (refreshListener) refreshListener.dispose();
       Utils.panel = null;
     },
     null,
@@ -236,13 +234,19 @@ async function open (filePath?: string) {
 
 }
 
-async function getWebviewContent(styleSrc, fallbackMessage, card, pagesShown = 1) {
+function cssUrl (panel, fileName) {
+  const onDiskPath = vscode.Uri.file(path.join(Utils.context.extensionPath, 'resources', 'css', fileName));
+  return panel.webview.asWebviewUri(onDiskPath);
+}
+
+async function getWebviewContent(panel, fallbackMessage, card, pagesShown = 1) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="${styleSrc}">
+    <link rel="stylesheet" type="text/css" href="${cssUrl(panel, 'card.css')}">
+    <link rel="stylesheet" type="text/css" href="${cssUrl(panel, 'github.css')}">
     <title>Recall: Flashcards Test</title>
 </head>
 <body>
