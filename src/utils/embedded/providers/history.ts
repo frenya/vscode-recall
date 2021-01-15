@@ -108,6 +108,10 @@ class History {
     }, {});
   }
 
+  timestampToday () {
+    return new Date(new Date().toISOString().substr(0, 10)).valueOf();
+  }
+
   logCardRecall (card, origTimestamp?, origChecksum?) {
     // Sanity check - ignore cards with zero recall
     if (!card.recall) return;
@@ -135,7 +139,7 @@ class History {
       const checksum = card.checksums[0];
       // Update card history
       if (!cards[checksum]) cards[checksum] = [];
-      cards[checksum].push({ timestamp: Date.now(), success: Math.floor(card.success), recall: card.recall});
+      cards[checksum].push({ timestamp: this.timestampToday(), success: Math.floor(card.success), recall: card.recall});
 
       let csvData = [checksum, Math.floor(card.success), card.recall];
       if (origChecksum) csvData.push(origChecksum, origTimestamp);

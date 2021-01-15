@@ -175,7 +175,7 @@ class JS extends Abstract {
   processReviewResult (card, multiplier) {
     card.recall = Math.max(1, card.recall * multiplier);
     card.success = multiplier;
-    card.nextReviewDate = Date.now() + card.recall * 24 * 3600 * 1000;
+    card.nextReviewDate = this.history.timestampToday() + card.recall * 24 * 3600 * 1000;
     card.state = this.getCardState(card);
     console.log(card);
 

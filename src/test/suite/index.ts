@@ -43,6 +43,16 @@ export async function run(): Promise<void> {
   });
   await coverageRunner.wrap();
 
+  // Check the modules already loaded and warn in case of race condition
+  const myFilesRegex = /vscode-recall\/out/;
+  const filterFn = myFilesRegex.test.bind(myFilesRegex);
+  if (Object.keys(require.cache).filter(filterFn).length > 2) {
+    console.warn('NYC initialized after modules were loaded', Object.keys(require.cache).filter(filterFn));
+  }
+
+  // Debug which files will be included/excluded
+  // console.log('Glob verification', await coverageRunner.exclude.glob(coverageRunner.cwd));
+
   await coverageRunner.createTempDirectory();
 	// Create the mocha test
 	const mocha = new Mocha({
@@ -58,7 +68,13 @@ export async function run(): Promise<void> {
 
   const failures: number = await new Promise(resolve => mocha.run(resolve));
   await coverageRunner.writeCoverageFile();
+
+  const old_write = process.stdout.write;
+  let buffer = '';
+  process.stdout.write = (s) => { buffer = buffer + s; return true; };
   await coverageRunner.report();
+  process.stdout.write = old_write;
+  console.log(buffer);
 
   if (failures > 0) {
     throw new Error(`${failures} tests failed.`);
