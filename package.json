@@ -3,7 +3,7 @@
   "displayName": "Recall",
   "description": "Spaced repetition flashcards plugin",
   "icon": "resources/logo/recall.png",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "license": "MIT",
   "engines": {
     "vscode": "^1.38.0"
@@ -12,7 +12,7 @@
     "Other"
   ],
   "activationEvents": [
-    "*"
+    "onStartupFinished"
   ],
   "main": "./dist/extension.js",
   "publisher": "frenya",
@@ -144,18 +144,21 @@
     "public-push": "~/bin/git_public_push.sh v$npm_package_version"
   },
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@types/glob": "^7.1.1",
     "@types/lodash": "^4.14.123",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^10.12.21",
+    "@types/node": "^14.0.1",
     "@types/vscode": "^1.38.0",
     "decache": "^4.5.1",
     "glob": "^7.1.4",
     "mocha": "^6.2.0",
     "mockery": "^2.1.0",
-    "nyc": "^15.0.0",
+    "nyc": "^15.1.0",
     "sinon": "^7.4.2",
+    "source-map-support": "^0.5.19",
     "ts-loader": "^5.4.4",
+    "ts-node": "^9.1.1",
     "tslint": "^5.12.1",
     "typescript": "^3.3.1",
     "vscode-test": "^1.2.0",
@@ -180,7 +183,7 @@
     "absolute": "0.0.1",
     "diff": "^3.5.0",
     "edn-data": "^0.2.0",
-    "fast-csv": "^4.3.2",
+    "fast-csv": "^4.3.6",
     "find-up": "^3.0.0",
     "globby": "^9.2.0",
     "lodash": "^4.17.15",

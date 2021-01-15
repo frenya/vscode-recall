@@ -93,6 +93,27 @@ function editFile (filePath, offset) {
   Utils.file.openTextFileAtOffset(filePath, offset);
 }
 
+function findChecksums (...args) {
+  // console.log(filePath, offset);
+  // Utils.file.openTextFileAtOffset(filePath, offset);
+  vscode.commands.executeCommand('workbench.action.findInFiles', { 
+    query: args.join('|'),
+    triggerSearch: true,
+    filesToInclude: '**/*.csv',
+    isRegex: true,
+    isCaseSensitive: false,
+    matchWholeWord: false,
+  });
+}
+
+function archiveCard (filePath, checksum) {
+  Utils.embedded.provider.archiveCard(filePath, checksum);
+}
+
+function logCardToConsole (filePath, checksum) {
+  Utils.embedded.provider.logCardToConsole(filePath, checksum);
+}
+
 /**
  * Returns a command url usable in Markdown strings.
  * 
@@ -107,5 +128,6 @@ const createCommandUrl = (commandName, ...params) => {
 /* EXPORT */
 
 export {
-  createCommandUrl, startRecall, startFileReview, convertMochiJSON, convertMochiExport, editFile
+  createCommandUrl, startRecall, startFileReview, convertMochiJSON, convertMochiExport, editFile,
+  findChecksums, archiveCard, logCardToConsole
 };

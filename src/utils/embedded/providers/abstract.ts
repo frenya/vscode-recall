@@ -3,7 +3,7 @@
 
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
-import Config from '../../../config';
+import Config, { myExtension } from '../../../config';
 import File from '../../file';
 import Folder from '../../folder';
 
@@ -11,13 +11,12 @@ import Folder from '../../folder';
 
 export const pathNormalizer = filePath => filePath.replace ( /\\/g, '/' ).normalize();
 
-
 class Abstract {
 
   include = undefined;
   exclude = undefined;
   rootPaths = undefined;
-  filesData = undefined; // { [filePath]: todo[] | undefined }
+  filesData = undefined;
   watchers: vscode.FileSystemWatcher[] = [];
 
   globMatch: Function = null;
@@ -33,8 +32,15 @@ class Abstract {
     this.include = config.get('include');
     this.exclude = config.get('exclude');
 
-    vscode.workspace.onDidChangeConfiguration ( () => {
-      console.warn('Configuration has changed, maybe I should do something about it!');
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration(`${myExtension}.include`) || e.affectsConfiguration(`${myExtension}.exclude`)) {
+        console.warn('Glob patterns changes deleting cached file data');
+        this.filesData = undefined;
+      }
+      else if (e.affectsConfiguration(myExtension)) {
+        // TODO: Invalidate content when other settings change
+        console.warn(myExtension, 'configuration change ignored');
+      }
     });
 
   }
@@ -143,7 +149,7 @@ class Abstract {
   }
 
   // Method to emit debounced refresh event
-  refresh = _.debounce (() => { this.filesDataChanged.fire(); }, 750);
+  refresh = _.debounce (() => { this.filesDataChanged.fire(null); }, 750);
 
   invalidateFileData (filePath, content) {
     // Sanity check (in case this.filesData hasn't been initialized yet)

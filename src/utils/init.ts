@@ -25,6 +25,11 @@ const Init = {
 
     });
 
+    // Test - internal command
+    vscode.commands.registerCommand ( 'recall.findChecksums', Commands['findChecksums'] );
+    vscode.commands.registerCommand ( 'recall.archiveCard', Commands['archiveCard'] );
+    vscode.commands.registerCommand ( 'recall.logCardToConsole', Commands['logCardToConsole'] );
+
     return Commands;
 
   },

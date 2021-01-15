@@ -5,7 +5,15 @@ import * as Mocha from 'mocha';
 const NYC = require('nyc');
 import * as glob from 'glob';
 
-import * as mocks from './mocks';
+// Simulates the recommended config option
+// extends: "@istanbuljs/nyc-config-typescript",
+import * as baseConfig from "@istanbuljs/nyc-config-typescript";
+
+// Recommended modules, loading them here to speed up NYC init
+// and minimize risk of race condition
+import 'ts-node/register';
+import 'source-map-support/register';
+
 
 // Linux: prevent a weird NPE when mocha on Linux requires the window size from the TTY
 // Since we are not running in a tty environment, we just implementt he method statically
@@ -21,17 +29,21 @@ export async function run(): Promise<void> {
 
   // Setup coverage pre-test, including post-test hook to report
   const coverageRunner = new NYC({
+    ...baseConfig,
     cwd: path.join(__dirname, '..', '..', '..'),
-    reporter: ['text', 'html'],
+    reporter: ['text-summary', 'html'],
     all: true,
+    silent: false,
     instrument: true,
     hookRequire: true,
     hookRunInContext: true,
     hookRunInThisContext: true,
+    include: [ "out/**/*.js" ],
+    exclude: [ "out/test/**" ],
   });
-  await coverageRunner.reset();   // Reinitializes .nyc_output folder
   await coverageRunner.wrap();
 
+  await coverageRunner.createTempDirectory();
 	// Create the mocha test
 	const mocha = new Mocha({
 		ui: 'tdd',
@@ -39,9 +51,6 @@ export async function run(): Promise<void> {
 	});
   mocha.useColors(true);
   
-  // Register all mocks
-  mocks.setUp();
-
   const files = glob.sync('**/*.test.js', { cwd: testsRoot });
 
   // Add files to the test suite

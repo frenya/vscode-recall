@@ -8,7 +8,7 @@ import * as vscode from 'vscode';
 import Config from '../config';
 import Utils from '../utils';
 import { createCommandUrl } from '../commands';
-import { badgeUrlFile } from '../decorators';
+import { decorationBadgePath } from '../decorators';
 
 const ARCHIVE_RECALL = 10000;
 
@@ -78,7 +78,7 @@ async function open (filePath?: string) {
     if (currentCard) currentCardIndex++;
 
     // Limit the number of new cards for review
-    if (!currentCard || currentCard.recall || (newCardCounter-- > 0)) {
+    if (!currentCard || currentCard.recall || currentCard.reverse || (newCardCounter-- > 0)) {
       rerender();
     }
     else {
@@ -110,11 +110,11 @@ async function open (filePath?: string) {
 
   function rerender () {
     // Fallback message
-    let fallbackMessage = [ '<p>No cards to review. Well done!</p>' ];
+    let fallbackMessage = [ '<p>No more cards to review. Well done!</p>' ];
     if (skipNewCardCount) fallbackMessage.push(`<p><i>(${skipNewCardCount} new cards were automatically skipped, run the review again to go over them)</i></p>`);
 
     // Show progress of the review
-    console.log('New cards left', newCardCounter, 'Showing card', currentCard);
+    // console.log('New cards left', newCardCounter, 'Showing card', currentCard);
     if (statusBarMessage) statusBarMessage.dispose();
     let newCardsMessage = newCardCounter < totalCards ? `, ${newCardCounter} new cards left` : '';
     if (newCardCounter < 0) newCardsMessage = skipNewCardCount ?  `, skipped ${skipNewCardCount} new cards` : '';
@@ -175,6 +175,11 @@ async function open (filePath?: string) {
   }
 
   function isCardDue(card) {
+    // Only show reverse cards in case the original has been archived
+    if (card.reverse && card.reverseFor) {
+      if (card.reverseFor.state !== 'ARCHIVED') return false;
+    }
+    
     return card.nextReviewDate <= Date.now();
   }
 
@@ -226,6 +231,7 @@ async function open (filePath?: string) {
     () => {
       if (statusBarMessage) statusBarMessage.dispose();
       if (refreshListener) refreshListener.dispose();
+      Utils.embedded.provider.history.closeWriteStreams();
       Utils.panel = null;
     },
     null,
@@ -299,7 +305,7 @@ async function renderCard (card, pagesShown) {
   const headerDivider = ' \u25B6 ';
 
   return `<div class="preamble">
-    <span><img class="label" src="${badgeUrlFile(card.state, 13)}" alt="${card.state}"></img> <b>${card.root}</b> / ${card.relativePath}${card.headerPath.length ? headerDivider : ''}${card.headerPath.join(headerDivider)}</span>
+    <span><img class="label" src="${decorationBadgePath(card, 13)}" alt="${card.state}"></img> <b>${card.root}</b> / ${card.relativePath}${card.headerPath.length ? headerDivider : ''}${card.headerPath.join(headerDivider)}</span>
     <span><a href="${createCommandUrl('editFile', card.filePath, card.offset)}">Edit</a></span>
   </div>
   <div class="card">
@@ -317,7 +323,7 @@ async function renderCard (card, pagesShown) {
     </div>
   </div>
   <div class="postscript">
-    <span>Id: ${card.checksum}</span>
+    <span>Id: ${card.checksums[0]}</span>
     <span>Recall: ${card.recall}</span>
   </div>`;
 }

@@ -2,13 +2,13 @@ import * as _ from 'lodash';
 const fs = require('fs');
 const path = require('path');
 import { format, parse } from 'fast-csv';
-import { Stream } from 'stream';
 
 type RowType = {
   checksum: string,
   timestamp: number,
   success: boolean,
   recall: number,
+  prevChecksum: string,
 };
 
 class History {
@@ -20,8 +20,16 @@ class History {
   }
 
   destructor () {
+    this.closeWriteStreams();
+  }
+
+  closeWriteStreams () {
     Object.getOwnPropertyNames(this.recallHistory).forEach(folderPath => {
-      if (this.recallHistory[folderPath].stream) this.recallHistory[folderPath].stream.end();
+      if (this.recallHistory[folderPath].stream) {
+        console.log('Closing write stream for', folderPath);
+        this.recallHistory[folderPath].stream.end();
+        this.recallHistory[folderPath].stream = null;
+      }
     });
   }
 
@@ -61,12 +69,13 @@ class History {
       let result = [];
       try {
         fs.createReadStream(filePath)
-          .pipe(parse({ headers: ['checksum', 'success', 'recall'] }))
+          .pipe(parse({ headers: ['checksum', 'success', 'recall', 'prevChecksum', 'timestamp'] }))
           .transform(row => ({
             checksum: row.checksum,
-            timestamp: timestamp,
+            timestamp: row.timestamp ? parseInt(row.timestamp) : timestamp,
             success: parseInt(row.success),
             recall: parseInt(row.recall),
+            prevChecksum: row.prevChecksum,
           }))
           .on('error', reject)
           .on('data', row => { result.push(row); })
@@ -90,6 +99,7 @@ class History {
 
     const historyLog:RowType[] = _.flatten(await Promise.all(files.map(this.loadCardHistoryCSV)));
 
+    // TODO: Use Lodash for grouping?
     return historyLog.reduce((result, row:RowType) => {
       const { checksum, ...review } = row;
       if (result[checksum]) result[checksum].push(review);
@@ -98,7 +108,10 @@ class History {
     }, {});
   }
 
-  logCardRecall (card, multiplier) {
+  logCardRecall (card, origTimestamp?, origChecksum?) {
+    // Sanity check - ignore cards with zero recall
+    if (!card.recall) return;
+
     const folderPath = card.rootPath;
     const folderHistory = this.recallHistory[folderPath];
     if (!folderHistory) {
@@ -119,12 +132,14 @@ class History {
     }
     
     folderHistory.cards.then(cards => {
+      const checksum = card.checksums[0];
       // Update card history
-      if (!cards[card.checksum]) cards[card.checksum] = [];
-      cards[card.checksum].push({ timestamp: Date.now(), success: multiplier, recall: card.recall});
+      if (!cards[checksum]) cards[checksum] = [];
+      cards[checksum].push({ timestamp: Date.now(), success: Math.floor(card.success), recall: card.recall});
 
-      const csvData = [card.checksum, multiplier, card.recall];
-      console.log('Writing card to log', card, csvData);
+      let csvData = [checksum, Math.floor(card.success), card.recall];
+      if (origChecksum) csvData.push(origChecksum, origTimestamp);
+      // console.log('Writing card to log', card, csvData);
   
       try {
         const result = folderHistory.stream.write(csvData.join(',') + '\n');
@@ -139,7 +154,6 @@ class History {
   /**
    * 
    * @param card 
-   * @param oldChecksum Optional "old" checksum - usefull when the logic of checksums changes
    */
   async getCardRecall (card) {
     const folderHistory = this.recallHistory[card.rootPath];
@@ -149,14 +163,18 @@ class History {
     }
 
     folderHistory.cards.then(cards => {
-      const cardHistory = cards[card.checksum] || cards[card.checksumPure] || [];
+      const cardHistory = cards[card.checksums[0]] || cards[card.checksums[1]] || [];
 
       cardHistory.forEach(review => {
         const nextReviewDate = review.timestamp + review.recall * 24 * 3600 * 1000 + Math.random() * 1000;
         if (nextReviewDate > card.nextReviewDate) {
+          card.lastReviewDate = review.timestamp;
           card.nextReviewDate = nextReviewDate;
           card.recall = review.recall;
           card.success = review.success;
+        }
+        if (review.prevChecksum) {
+          card.checksums.push(review.prevChecksum);
         }
       }, { nextReviewDate: 0 });
     });

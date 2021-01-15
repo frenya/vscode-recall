@@ -11,6 +11,9 @@ const metadataParser = require('markdown-yaml-metadata-parser');
 const md5 = require('md5');
 import History from './history';
 
+const ARCHIVE_RECALL = 10000;
+
+
 /* JS */
 
 class JS extends Abstract {
@@ -37,7 +40,9 @@ class JS extends Abstract {
 
     // Determine the level at which cards are recognized
     // i.e. the regex to use to detect card starts
-    const recall = result.metadata.recall || config.get('defaultLevel') || 'header';
+    let recall = result.metadata.recall || config.get('defaultLevel') || 'header';
+    const revertCards = _.endsWith(recall, '+');
+    if (revertCards) recall = _.trimEnd(recall, '+');
     const cardRegex = Consts.cardRegexes[recall];
     const lineDivider:string = config.get('lineDivider') || ':';
     
@@ -90,19 +95,10 @@ class JS extends Abstract {
       // Filter out empty pages
       cardPages = cardPages.filter(text => !!_.trim(text));
 
+      let card = null;
       // Only push the cards that do have two or more pages
       if (cardPages.length > 1) {
-        const card = {
-          pages: cardPages,
-          offset: contentOffset + match.index,
-          cardType: cardType,
-          headerPath: _.compact(headerStack),
-          checksum: md5(cardPages.join('\n')),
-          checksumPure: md5(cardPages.map(x => x.replace(cardRegex, '')).join('\n')),
-          nextReviewDate: Math.random() * 1000,   // To randomize the review of new cards as well
-          recall: 0,
-        };
-        
+        card = createCard(cardPages);
         fileData.data.push(card);
       }
 
@@ -112,6 +108,41 @@ class JS extends Abstract {
         headerStack.push(cardPages[0].replace(cardRegex, ''));
         // console.log('Header stack:', headerStack);
       }
+      else {
+        if (card && revertCards) {
+          // Create reverse card
+          const [ firstPage, secondPage, ...rest ] = cardPages;
+          // let reverse = createCard([secondPage, firstPage, ...rest]);
+          let reverse = createCard([`# ${secondPage}`, firstPage.replace(cardRegex, ''), ...rest]);
+          reverse['reverseFor'] = card;
+          card['reverseFor'] = reverse;
+          reverse.reverse = true;
+          fileData.data.push(reverse);
+
+          // Make sure new reversed cards are always shown after NEW cards
+          reverse.nextReviewDate += 1000;
+        }
+      }
+
+      function createCard(cardPages) {
+        return {
+          pages: cardPages,
+          offset: contentOffset + match.index,
+          endOffset: contentOffset + nextCardStart,
+          cardType: cardType,
+          headerPath: _.compact(headerStack),
+          checksums: [
+            md5(cardPages.join('\n')), 
+            md5(cardPages.map(x => x.replace(cardRegex, '')).join('\n'))
+          ],
+          // checksum: md5(cardPages.join('\n')),
+          // checksumPure: md5(cardPages.map(x => x.replace(cardRegex, '')).join('\n')),
+          nextReviewDate: Math.random() * 1000,   // To randomize the review of new cards as well
+          recall: 0,
+          reverse: false,
+        };
+      }
+
     });
 
     console.log(fileData);
@@ -133,7 +164,8 @@ class JS extends Abstract {
     await this.history.addFolder(fileData.rootPath);
 
     return fileData.data.map(card => {
-      Object.assign(card, fileData);
+      const { data, ...fileMetadata } = fileData;
+      Object.assign(card, fileMetadata);
       this.history.getCardRecall(card)
         .then(() => { card.state = this.getCardState(card); });
       return card;
@@ -147,13 +179,49 @@ class JS extends Abstract {
     card.state = this.getCardState(card);
     console.log(card);
 
-    this.history.logCardRecall(card, Math.floor(multiplier));
+    this.history.logCardRecall(card);
+  }
+
+  daisychainCard (card, originalCard) {
+    // Sanity check
+    if (!card || !originalCard) return;
+
+    card.recall = originalCard.recall;
+    card.success = originalCard.success;
+    card.lastReviewDate = originalCard.lastReviewDate;
+    card.nextReviewDate = originalCard.nextReviewDate;
+    card.state = originalCard.state;
+    console.log(card);
+
+    this.history.logCardRecall(card, originalCard.lastReviewDate, originalCard.checksums[0]);
+  }
+
+  async archiveCard (filePath, checksum) {
+    // Find the card
+    const fileData = await this.getFileData(filePath);
+    const cards = await this.getCardsFromFileData(fileData);
+    let card = _.find(cards, c => c.checksums[0] === checksum);
+    if (card) {
+      card.recall = ARCHIVE_RECALL / 2;
+      this.processReviewResult(card, 2);
+      this.refresh();
+    }
+    else console.warn('Card not found', filePath, checksum, fileData);
+  }
+
+  async logCardToConsole (filePath, checksum) {
+    // Find the card
+    const fileData = await this.getFileData(filePath);
+    const cards = await this.getCardsFromFileData(fileData);
+    let card = _.find(cards, c => c.checksums[0] === checksum);
+    if (card) console.log(card);
+    else console.warn('Card not found', filePath, checksum, fileData);
   }
 
   getCardState (card) {
     if (card.recall === 0) return 'NEW';
 
-    if (card.recall >= 10000) return 'ARCHIVED';
+    if (card.recall >= ARCHIVE_RECALL) return 'ARCHIVED';
 
     switch (card.success) {
       case 0: return 'FAIL';

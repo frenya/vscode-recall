@@ -7,8 +7,7 @@ import JS from './providers/js';
 
 const Embedded = {
 
-  // TODO: Probably doesn't need to be asynchronous
-  async initProvider () {
+  initProvider () {
     if (!Embedded.provider) Embedded.provider = new JS ();
   },
 

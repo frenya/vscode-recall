@@ -6,7 +6,7 @@
   </linearGradient>
   <mask id="m"><rect width="702" height="200" rx="30" fill="#FFF"/></mask>
   <g mask="url(#m)">
-    <rect width="702" height="200" fill="#999" x="0"/>
+    <rect width="702" height="200" fill="#555" x="0"/>
     <rect width="702" height="200" fill="url(#a)"/>
   </g>
   <g aria-hidden="true" fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">

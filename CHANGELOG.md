@@ -2,6 +2,33 @@
 
 All notable changes to the "vscode-recall" extension will be documented in this file.
 
+## v0.8.0
+2021-01-04
+
+* Added reverse testing of bullet and asterisk cards
+* Added the possibility to keep review history after minor card changes 
+* Showing more details in card hover message
+
+## v0.7.0
+2020-12-24
+
+* Code blocks are now treated as one page, regardless of blank lines
+
+## v0.6.1
+2020-11-17
+
+* Fixed issue with network images not being displayed
+
+## v0.6.0
+2020-12-04
+
+* Status bar message now shows review progress
+* Added random shuffling of new cards
+* Improved card display on smaller screens
+* Added command to flashcard test current file
+* Added badge decorations in source file
+* Bug fixes and optimizations
+
 ## v0.5.0
 2020-11-23
 

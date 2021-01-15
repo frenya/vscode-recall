@@ -4,17 +4,13 @@
 import * as vscode from 'vscode';
 import Config from './config';
 import Consts from './consts';
-import Decorators from './decorators';
 import Utils from './utils';
+import Decorators from './decorators';
 import { open as openWhatsNew } from './views/whatsnew';
-
-// import ViewEmbedded from './views/embedded';
 
 /* ACTIVATE */
 
 const activate = function ( context: vscode.ExtensionContext ) {
-
-  // ViewEmbedded.expanded = Config(null).get('expanded');
 
   Utils.context = context;
   Utils.folder.initRootsRe ();
@@ -24,7 +20,6 @@ const activate = function ( context: vscode.ExtensionContext ) {
   Decorators.init(context);
 
   context.subscriptions.push (
-    vscode.workspace.onDidChangeConfiguration ( () => Utils.embedded.provider && delete Utils.embedded.provider.filesData ),
     vscode.workspace.onDidChangeWorkspaceFolders ( () => Utils.embedded.provider && Utils.embedded.provider.unwatchPaths () ),
     vscode.workspace.onDidChangeWorkspaceFolders ( Utils.folder.initRootsRe )
   );
@@ -35,10 +30,6 @@ const activate = function ( context: vscode.ExtensionContext ) {
   openWhatsNew();
 };
 
-const deactivate = function () {
+/* EXPORT */
 
-};
-
-  /* EXPORT */
-
-export {activate, deactivate};
+export {activate};

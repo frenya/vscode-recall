@@ -4,24 +4,24 @@ import * as vscode from 'vscode';
 import stringMatches from 'string-matches';
 import Consts from '../consts';
 import File from '../utils/file';
-import Folder from '../utils/folder';
 import Utils from '../utils';
-import { last } from 'lodash';
+import { myExtension } from '../config';
 const semver = require('semver');
 
-const VersionKey = 'recall.versionWatermark';
+const VersionKey = `${myExtension}.versionWatermark`;
 
 export async function open () {
 
   const lastVersion = Utils.getContextValue(VersionKey) || 'v0.0.0';
 
   // Parse Changelog and see if there are any new changes
+  // TODO: Get lastVersion from context
   const changes = await parseChangelog(lastVersion);
   if (!changes.length) return;
 
   // Create and show panel
   const panel = vscode.window.createWebviewPanel(
-    'Recall: What\'s new',
+    `${myExtension}.whatsnew`,
     'Recall: What\'s new',
     vscode.ViewColumn.One,
     {
@@ -77,6 +77,7 @@ async function parseChangelog (lastVersion): Promise<String[]> {
   let content = await File.read(filePath);
   if (!content) return data;
 
+  // Regex to identify all the second level headers in the Changelog
   const versionRegex = Consts.regexes.version;
   
   // Find the card starts in the current file
@@ -103,7 +104,7 @@ async function parseChangelog (lastVersion): Promise<String[]> {
 
   });
 
-  console.log(data);
+  // console.log(data);
 
   // Store watermark
   Utils.setContextValue(VersionKey, versionWatermark);
