@@ -28,7 +28,7 @@ export async function run(): Promise<void> {
 	const testsRoot = path.resolve(__dirname, '..');
 
   // Setup coverage pre-test, including post-test hook to report
-  const coverageRunner = new NYC({
+  const nyc = new NYC({
     ...baseConfig,
     cwd: path.join(__dirname, '..', '..', '..'),
     reporter: ['text-summary', 'html'],
@@ -41,19 +41,20 @@ export async function run(): Promise<void> {
     include: [ "out/**/*.js" ],
     exclude: [ "out/test/**" ],
   });
-  await coverageRunner.wrap();
+  await nyc.wrap();
 
   // Check the modules already loaded and warn in case of race condition
+  // (ideally, at this point the require cache should only contain one file - this module)
   const myFilesRegex = /vscode-recall\/out/;
   const filterFn = myFilesRegex.test.bind(myFilesRegex);
-  if (Object.keys(require.cache).filter(filterFn).length > 2) {
+  if (Object.keys(require.cache).filter(filterFn).length > 1) {
     console.warn('NYC initialized after modules were loaded', Object.keys(require.cache).filter(filterFn));
   }
 
   // Debug which files will be included/excluded
-  // console.log('Glob verification', await coverageRunner.exclude.glob(coverageRunner.cwd));
+  // console.log('Glob verification', await nyc.exclude.glob(nyc.cwd));
 
-  await coverageRunner.createTempDirectory();
+  await nyc.createTempDirectory();
 	// Create the mocha test
 	const mocha = new Mocha({
 		ui: 'tdd',
@@ -61,22 +62,25 @@ export async function run(): Promise<void> {
 	});
   mocha.useColors(true);
   
+  // Add all files to the test suite
   const files = glob.sync('**/*.test.js', { cwd: testsRoot });
-
-  // Add files to the test suite
   files.forEach(f => mocha.addFile(path.resolve(testsRoot, f)));
 
   const failures: number = await new Promise(resolve => mocha.run(resolve));
-  await coverageRunner.writeCoverageFile();
+  await nyc.writeCoverageFile();
 
-  const old_write = process.stdout.write;
-  let buffer = '';
-  process.stdout.write = (s) => { buffer = buffer + s; return true; };
-  await coverageRunner.report();
-  process.stdout.write = old_write;
-  console.log(buffer);
+  // Capture text-summary reporter's output and log it in console
+  console.log(await captureStdout(nyc.report.bind(nyc)));
 
   if (failures > 0) {
     throw new Error(`${failures} tests failed.`);
   }
+}
+
+async function captureStdout(fn) {
+  let w = process.stdout.write, buffer = '';
+  process.stdout.write = (s) => { buffer = buffer + s; return true; };
+  await fn();
+  process.stdout.write = w;
+  return buffer;
 }

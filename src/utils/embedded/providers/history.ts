@@ -59,6 +59,8 @@ class History {
   }
 
   /* async - essentially, returns Promise*/ 
+  // TODO: Refactor so that it accepts the read stream as second param
+  //       This will enable reading history from .zip file
   loadCardHistoryCSV (filePath) {
     // Get review date from filename
     const match = /recall-([0-9-]*)\.csv/.exec(filePath);

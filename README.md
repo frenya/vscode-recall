@@ -4,6 +4,8 @@
 
 It creates flashcards directly from your Markdown notes and let's you test yourself repeatedly to maximize your memory retention. This can be usefull when learning a new language, taking a course on a particular subject, remembering jokes or pretty much anything else you want to remember. The choice is yours 😉
 
+Want to learn more? You can check the [documentation site](https://recall.frenya.net).
+
 ![Screenshot](resources/img/screenshot.png)
 
 # How does it work?
