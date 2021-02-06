@@ -2,6 +2,12 @@
 
 All notable changes to the "vscode-recall" extension will be documented in this file.
 
+## v0.9.0
+2021-02-06
+
+* Moved the card's Edit button under the card
+* Added a stars indicator of the current recall level
+
 ## v0.8.0
 2021-01-04
 

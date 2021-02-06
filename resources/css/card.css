@@ -35,6 +35,17 @@ body {
 .postscript:hover {
   color: #888;
 }
+.postscript a {
+  text-decoration: none;
+  color: #383A3F;
+}
+.postscript:hover a {
+  color: #888;
+}
+.postscript a:hover {
+  text-decoration: underline;
+  color: #888;
+}
 
 .preamble {
   font-size: 12px;

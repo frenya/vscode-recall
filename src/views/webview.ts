@@ -297,6 +297,13 @@ async function renderPage(pageText) {
   return await vscode.commands.executeCommand ( 'markdown.api.render', pageText );
 }
 
+function renderRecallStars(value) {
+  if (value <= 0) return '';
+  const stars = Math.min(Math.log2(value), 5);
+  const text = ' ★'.repeat(stars).padStart(10, ' ☆');
+  return `<span style="color: rgba(221, 187, 17, ${0.5 + stars / 10.0});">${text}</span>`;
+}
+
 async function renderCard (card, pagesShown) {
   const renderedPages = await Promise.all(card.pages.map(async (text, i) => {
     return `<div class="${i ? 'back' : 'front'}" style="${i < pagesShown ? '' : 'display: none;'}">${await renderPage(text)}</div>`;
@@ -306,7 +313,7 @@ async function renderCard (card, pagesShown) {
 
   return `<div class="preamble">
     <span><img class="label" src="${decorationBadgePath(card, 13)}" alt="${card.state}"></img> <b>${card.root}</b> / ${card.relativePath}${card.headerPath.length ? headerDivider : ''}${card.headerPath.join(headerDivider)}</span>
-    <span><a href="${createCommandUrl('editFile', card.filePath, card.offset)}">Edit</a></span>
+    <span>${renderRecallStars(card.recall)}</span>
   </div>
   <div class="card">
     ${renderedPages.join('\n')}
@@ -325,6 +332,7 @@ async function renderCard (card, pagesShown) {
   <div class="postscript">
     <span>Id: ${card.checksums[0]}</span>
     <span>Recall: ${card.recall}</span>
+    <span><a href="${createCommandUrl('editFile', card.filePath, card.offset)}">Edit</a></span>
   </div>`;
 }
 
