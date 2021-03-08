@@ -3,7 +3,7 @@
 }
 
 body {
-  background: #383A3F;
+  background: var(--vscode-editor-background);
   font-size: 16px;
   height: 100vh;
   display: -webkit-box;
@@ -11,17 +11,17 @@ body {
 }
 
 .card {
-  background: #1F2124;
+  background: var(--vscode-dropdown-listBackground);
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
   border-radius: 5px;
   padding: 0px;
   text-align: left;
-  color: white;
+  color: var(--vscode-editor-foreground);
 }
 
 .postscript {
   font-size: 12px;
-  color: #383A3F;
+  color: rgba(0, 0, 0, 0);
   width: 100%;
   padding: 20px 20px;
   display: -webkit-box;
@@ -33,23 +33,23 @@ body {
           justify-content: space-between;
 }
 .postscript:hover {
-  color: #888;
+  color: var(--vscode-editorLineNumber-foreground);
 }
 .postscript a {
   text-decoration: none;
-  color: #383A3F;
+  color: rgba(0, 0, 0, 0);
 }
 .postscript:hover a {
-  color: #888;
+  color: var(--vscode-editorLineNumber-foreground);
 }
 .postscript a:hover {
   text-decoration: underline;
-  color: #888;
+  color: var(--vscode-editorLineNumber-foreground);
 }
 
 .preamble {
   font-size: 12px;
-  color: #888;
+  color: var(--vscode-editorLineNumber-foreground);
   width: 100%;
   padding: 20px 20px;
   display: -webkit-box;
@@ -62,17 +62,10 @@ body {
 }
 .preamble a {
   text-decoration: none;
-  color: #888;
+  color: var(--vscode-editorLineNumber-foreground);
 }
 .preamble a:hover {
   text-decoration: underline;
-}
-.preamble span.label {
-  color: #eee;
-  background-color: royalblue;
-  padding: 0px 5px;
-  margin-right: 20px;
-  border-radius: 3px;
 }
 .preamble img.label {
   margin-right: 20px;
@@ -101,11 +94,11 @@ body {
 }
 .card .back em {
   font-style: normal;
-  color: #F66;
+  color: var(--vscode-list-warningForeground);
 }
 
 .card .buttons {
-  border-top: solid 1px #444;
+  border-top: solid 1px var(--vscode-notebook-focusedRowBorder);
   width: 100%;
   padding: 20px 20px;
   display: -webkit-box;
@@ -118,16 +111,16 @@ body {
 }
 .card .btn {
   display: inline;
-  color: #444;
+  color: var(--vscode-editorLineNumber-foreground);
   border-radius: 5px;
   text-decoration: none;
 }
 .card .btn:hover {
-  color: #F68657;
+  color: var(--vscode-editorLineNumber-activeForeground);
 }
 .card .warning {
   display: inline;
-  color: #844;
+  color: var(--vscode-list-warningForeground);
   border-radius: 5px;
   text-decoration: none;
 }
@@ -138,7 +131,7 @@ body {
 }
 
 .card table tr {
-  border-top: 1px solid #cccccc;
+  border-top: 1px solid var(--vscode-notebook-focusedRowBorder);
   /* background-color: white; */
   margin: 0;
   padding: 0;
@@ -152,14 +145,14 @@ body {
 
  .card table tr th {
   font-weight: bold;
-  border: 1px solid #cccccc;
+  border: 1px solid var(--vscode-notebook-focusedRowBorder);
   text-align: left;
   margin: 0;
   padding: 13px 20px;
 }
 
 .card table tr td {
-  border: 1px solid #cccccc;
+  border: 1px solid var(--vscode-notebook-focusedRowBorder);
   text-align: left;
   margin: 0;
   padding: 13px 20px;
@@ -180,5 +173,5 @@ table tr td :last-child {
   margin: auto;
   width: calc(50%);
   min-width: 768px;
-  color: #888;
+  color: var(--vscode-editorLineNumber-activeForeground);
 }

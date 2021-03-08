@@ -145,7 +145,7 @@ class JS extends Abstract {
 
     });
 
-    console.log(fileData);
+    // console.log(fileData);
     return fileData;
   }
 

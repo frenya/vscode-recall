@@ -2,6 +2,11 @@
 
 All notable changes to the "vscode-recall" extension will be documented in this file.
 
+## v0.10.0
+2021-03-08
+
+* Updated review colors based on selected VSCode theme
+
 ## v0.9.0
 2021-02-06
 

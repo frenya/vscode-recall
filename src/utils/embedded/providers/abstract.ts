@@ -97,7 +97,7 @@ class Abstract {
     // In other words, at the beginning, all applicable files are recorded but their content is invalidated
     this.filesData = _.zipObject(_.map(filePaths, pathNormalizer), []);
 
-    console.log('Initialized filesData', this.filesData);
+    // console.log('Initialized filesData', this.filesData);
   }
 
   /**
