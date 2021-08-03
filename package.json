@@ -3,7 +3,7 @@
   "displayName": "Recall",
   "description": "Spaced repetition flashcards plugin",
   "icon": "resources/logo/recall.png",
-  "version": "0.11.1",
+  "version": "0.11.2",
   "license": "MIT",
   "engines": {
     "vscode": "^1.38.0"
@@ -29,7 +29,10 @@
       {
         "command": "recall.startRecall",
         "title": "Recall: Flashcards Test",
-        "icon": "resources/icons/brain-light.svg"
+        "icon": {
+          "light": "resources/icons/brain-dark.svg",
+          "dark": "resources/icons/brain-light.svg"
+        }
       },
       {
         "command": "recall.startFileReview",

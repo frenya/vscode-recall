@@ -285,7 +285,7 @@ async function getWebviewContent(panel, fallbackMessage, card, pagesShown = 1) {
 
         function addOnClickHandler(id) {
           const btn = document.getElementById(id);
-          console.log(btn);
+          // console.log(btn);
           btn.onclick = function (e) { onButtonClick(id); };
         };
 
@@ -297,6 +297,7 @@ async function getWebviewContent(panel, fallbackMessage, card, pagesShown = 1) {
           else if (e.code === 'KeyN' ) onButtonClick('next');
           else console.log(e);
         };
+        window.focus();
       }());
     </script>
 </body>
