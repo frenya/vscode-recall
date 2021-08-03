@@ -3,7 +3,7 @@
   "displayName": "Recall",
   "description": "Spaced repetition flashcards plugin",
   "icon": "resources/logo/recall.png",
-  "version": "0.10.0",
+  "version": "0.11.1",
   "license": "MIT",
   "engines": {
     "vscode": "^1.38.0"
@@ -28,11 +28,13 @@
     "commands": [
       {
         "command": "recall.startRecall",
-        "title": "Recall: Flashcards Test"
+        "title": "Recall: Flashcards Test",
+        "icon": "resources/icons/brain-light.svg"
       },
       {
         "command": "recall.startFileReview",
-        "title": "Recall: Flashcards Test of current file"
+        "title": "Recall: Flashcards Test of current file",
+        "icon": "resources/icons/brain-light.svg"
       },
       {
         "command": "recall.convertMochiJSON",
@@ -45,8 +47,45 @@
       {
         "command": "recall.editFile",
         "title": "Recall: Edit source file"
+      },
+      {
+        "command": "recall.openSettings",
+        "title": "Recall Settings"
       }
     ],
+    "menus": {
+      "editor/title": [
+        {
+          "when": "editorLangId == markdown",
+          "command": "recall.startRecall",
+          "alt": "recall.startFileReview",
+          "group": "navigation"
+        },
+        {
+          "when": "editorLangId == markdown",
+          "command": "recall.openSettings",
+          "group": "z_commands"
+        },
+        {
+          "when": "recall-focused == true",
+          "command": "recall.openSettings",
+          "group": "navigation"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "when": "editorLangId == markdown",
+          "command": "recall.startFileReview",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "recall.editFile",
+          "when": "false"
+        }
+      ]
+    },
     "configuration": {
       "type": "object",
       "title": "Recall",
@@ -59,34 +98,6 @@
           "description": "Globs to use for including files",
           "default": [
             "**/*.md"
-          ]
-        },
-        "recall.exclude": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Globs to use for excluding files",
-          "default": [
-            "**/.*",
-            "**/.*/**",
-            "**/_output/**",
-            "**/bower_components/**",
-            "**/build/**",
-            "**/dist/**",
-            "**/node_modules/**",
-            "**/out/**",
-            "**/output/**",
-            "**/release/**",
-            "**/releases/**",
-            "**/static/**",
-            "**/target/**",
-            "**/third_party/**",
-            "**/vendor/**",
-            "**/CHANGELOG",
-            "**/CHANGELOG.*",
-            "**/*.min.*",
-            "**/*.map"
           ]
         },
         "recall.defaultLevel": {
@@ -195,7 +206,8 @@
     "pify": "^4.0.1",
     "semver": "^6.3.0",
     "string-matches": "^1.1.3",
-    "unzipper": "^0.10.11"
+    "unzipper": "^0.10.11",
+    "vscode-extension-telemetry": "^0.1.7"
   },
   "extensionDependencies": [
     "yzhang.markdown-all-in-one"

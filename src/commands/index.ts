@@ -125,9 +125,15 @@ const createCommandUrl = (commandName, ...params) => {
   return vscode.Uri.parse(`command:recall.${commandName}?${encodedParams}`);
 };
 
+function openSettings () {
+  vscode.commands.executeCommand('workbench.action.openSettings', 'recall.' );
+  vscode.commands.executeCommand('workbench.action.openWorkspaceSettings');
+}
+
+
 /* EXPORT */
 
 export {
   createCommandUrl, startRecall, startFileReview, convertMochiJSON, convertMochiExport, editFile,
-  findChecksums, archiveCard, logCardToConsole
+  findChecksums, archiveCard, logCardToConsole, openSettings
 };

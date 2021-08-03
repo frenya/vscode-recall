@@ -2,6 +2,13 @@
 
 All notable changes to the "vscode-recall" extension will be documented in this file.
 
+## v0.11.0
+2021-03-28
+
+* Improved UI - added title bar commands to run review and adjust settings
+* Added visible Next button
+* Changed review logic to orignal Leitner - forgetting card resets recall to 1
+
 ## v0.10.0
 2021-03-08
 

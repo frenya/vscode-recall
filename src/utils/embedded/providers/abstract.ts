@@ -30,7 +30,12 @@ class Abstract {
 
     const config = Config(null);
     this.include = config.get('include');
-    this.exclude = config.get('exclude');
+    // this.exclude = config.get('exclude');
+    this.exclude = [
+      '**/.*', '**/.*/**', '**/_output/**', '**/bower_components/**', '**/build/**', '**/dist/**', '**/node_modules/**', 
+      '**/out/**', '**/output/**', '**/release/**', '**/releases/**', '**/static/**', '**/target/**', '**/third_party/**', 
+      '**/vendor/**', '**/CHANGELOG', '**/CHANGELOG.*', '**/*.min.*', '**/*.map'
+    ];
 
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration(`${myExtension}.include`) || e.affectsConfiguration(`${myExtension}.exclude`)) {

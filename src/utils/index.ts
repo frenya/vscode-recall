@@ -8,6 +8,7 @@ import file from './file';
 import folder from './folder';
 import init from './init';
 import view from './view';
+import { Reporter } from './telemetry';
 
 /* UTILS */
 
@@ -21,6 +22,7 @@ const Utils = {
 
   // Webview panel
   panel: null,
+  reporter: <Reporter> undefined,
 
   getContextValue: function (key) { 
     return this.context.globalState.get(key);

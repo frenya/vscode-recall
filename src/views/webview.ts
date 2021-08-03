@@ -10,7 +10,7 @@ import Utils from '../utils';
 import { createCommandUrl } from '../commands';
 import { decorationBadgePath } from '../decorators';
 
-const ARCHIVE_RECALL = 10000;
+import { ARCHIVE_RECALL, RESULT_FAIL, RESULT_STRUGGLE, RESULT_SUCCESS } from '../utils/embedded/providers/js';
 
 async function open (filePath?: string) {
 
@@ -163,6 +163,9 @@ async function open (filePath?: string) {
     showNextCard();
   }
 
+  setWebviewFocused(true);
+  panel.onDidChangeViewState(e => setWebviewFocused(e.webviewPanel.active));
+
   // Reload the card deck and reset related variables
   async function loadData () {
     const allCards = await cardProvider.getCards(filePath ? filterFn : null);
@@ -186,6 +189,8 @@ async function open (filePath?: string) {
   // Handle messages from the webview
   panel.webview.onDidReceiveMessage(
     message => {
+      Utils.reporter.sendEvent(message);
+    
       if (message === 'next') {
         skipCard();
         return;
@@ -206,18 +211,18 @@ async function open (filePath?: string) {
           // Don't archive when "forgot" is sent
           if (message === 'forgot') {
             if(currentCard.recall >= ARCHIVE_RECALL) currentCard.recall -= ARCHIVE_RECALL;
-            cardProvider.processReviewResult(currentCard, 0.5);
+            cardProvider.processReviewResult(currentCard, RESULT_FAIL);
             showNextCard();
           }
           else if (message === 'struggled') {
             if(currentCard.recall >= ARCHIVE_RECALL) currentCard.recall -= ARCHIVE_RECALL;
-            cardProvider.processReviewResult(currentCard, 1);
+            cardProvider.processReviewResult(currentCard, RESULT_STRUGGLE);
             showNextCard();
           }
           else if (message === 'remembered') {
             // This is an ugly hack to make sure the archived cards have recall of exactly ARCHIVE_RECALL
             if(currentCard.recall >= ARCHIVE_RECALL) currentCard.recall = ARCHIVE_RECALL / 2;
-            cardProvider.processReviewResult(currentCard, 2);
+            cardProvider.processReviewResult(currentCard, RESULT_SUCCESS);
             showNextCard();
           }
         }
@@ -233,11 +238,16 @@ async function open (filePath?: string) {
       if (refreshListener) refreshListener.dispose();
       Utils.embedded.provider.history.closeWriteStreams();
       Utils.panel = null;
+      setWebviewFocused(false);
     },
     null,
     Utils.context.subscriptions
   );
 
+}
+
+function setWebviewFocused(value: boolean) {
+  vscode.commands.executeCommand('setContext', 'recall-focused', value);
 }
 
 function cssUrl (panel, fileName) {
@@ -266,6 +276,7 @@ async function getWebviewContent(panel, fallbackMessage, card, pagesShown = 1) {
         addOnClickHandler('remembered');
         addOnClickHandler('struggled');
         addOnClickHandler('forgot');
+        addOnClickHandler('next');
 
         function onButtonClick(id) {
           // console.log(id);
@@ -318,7 +329,8 @@ async function renderCard (card, pagesShown) {
   <div class="card">
     ${renderedPages.join('\n')}
     <div class="buttons" style="${pagesShown < card.pages.length ? '' : 'display: none;'}">
-      <a id="expand" href="#" class="btn" onclick="console.log">Expand</a>
+      <a id="expand" href="#" class="btn" onclick="console.log">Expand (Space)</a>
+      <a id="next" href="#" class="btn" onclick="console.log">Next (N)</a>
     </div>
     <div class="buttons" style="${pagesShown === card.pages.length ? '' : 'display: none;'}">
       <a id="remembered" href="#" class="btn">Remembered (Enter)</a>

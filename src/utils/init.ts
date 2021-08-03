@@ -4,6 +4,7 @@
 import * as _ from 'lodash';
 import * as vscode from 'vscode';
 import * as Commands from '../commands';
+import Utils from '../utils';
 
 /* INIT */
 
@@ -17,7 +18,7 @@ const Init = {
 
       const commandName = _.last ( command.split ( '.' ) ) as string,
             handler = Commands[commandName],
-            disposable = vscode.commands.registerCommand ( command, handler );
+            disposable = vscode.commands.registerCommand ( command, Utils.reporter.commandWrapper(commandName, handler) );
 
       if (!handler) console.warn('No handler found for command', command);
 

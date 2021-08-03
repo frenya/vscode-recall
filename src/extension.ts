@@ -7,6 +7,7 @@ import Consts from './consts';
 import Utils from './utils';
 import Decorators from './decorators';
 import { open as openWhatsNew } from './views/whatsnew';
+import { Reporter } from './utils/telemetry';
 
 /* ACTIVATE */
 
@@ -14,6 +15,8 @@ const activate = function ( context: vscode.ExtensionContext ) {
 
   Utils.context = context;
   Utils.folder.initRootsRe ();
+
+  Utils.reporter = new Reporter(true);
 
   Utils.embedded.initProvider();
 
@@ -30,6 +33,11 @@ const activate = function ( context: vscode.ExtensionContext ) {
   openWhatsNew();
 };
 
-/* EXPORT */
+function deactivate() {
+  // This will ensure all pending events get flushed
+  Utils.reporter.dispose();
+  Utils.reporter = undefined;
+}
 
-export {activate};
+export {activate, deactivate};
+

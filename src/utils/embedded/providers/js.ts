@@ -11,8 +11,14 @@ const metadataParser = require('markdown-yaml-metadata-parser');
 const md5 = require('md5');
 import History from './history';
 
-const ARCHIVE_RECALL = 10000;
+export const ARCHIVE_RECALL = 10000;
 
+export const RESULT_FAIL = 0;
+export const RESULT_STRUGGLE = 1;
+export const RESULT_SUCCESS = 2;
+export const RESULT_ARCHIVE = 3;
+
+const resultMultipliers = [0, 0.5, 2];
 
 /* JS */
 
@@ -172,9 +178,12 @@ class JS extends Abstract {
     });
   }
 
-  processReviewResult (card, multiplier) {
-    card.recall = Math.max(1, card.recall * multiplier);
-    card.success = multiplier;
+  processReviewResult (card, result: number) {
+    if (result < resultMultipliers.length) {
+      const multiplier = resultMultipliers[result];
+      card.recall = Math.max(1, card.recall * multiplier);
+    }
+    card.success = result;
     card.nextReviewDate = this.history.timestampToday() + card.recall * 24 * 3600 * 1000;
     card.state = this.getCardState(card);
     console.log(card);
@@ -202,8 +211,8 @@ class JS extends Abstract {
     const cards = await this.getCardsFromFileData(fileData);
     let card = _.find(cards, c => c.checksums[0] === checksum);
     if (card) {
-      card.recall = ARCHIVE_RECALL / 2;
-      this.processReviewResult(card, 2);
+      card.recall = ARCHIVE_RECALL;
+      this.processReviewResult(card, RESULT_ARCHIVE);
       this.refresh();
     }
     else console.warn('Card not found', filePath, checksum, fileData);
@@ -224,10 +233,10 @@ class JS extends Abstract {
     if (card.recall >= ARCHIVE_RECALL) return 'ARCHIVED';
 
     switch (card.success) {
-      case 0: return 'FAIL';
-      case 1: return 'GOOD';    // Will update later for HARD, must give users time to use the new logging first
-      case 2: return 'GOOD';
-      default: return 'FAIL';   // TODO: Rethink
+      case RESULT_FAIL: return 'FAIL';
+      case RESULT_STRUGGLE: return 'HARD';
+      case RESULT_SUCCESS: return 'GOOD';
+      default: return 'ARCHIVED';   // TODO: Rethink
     }
   }
 

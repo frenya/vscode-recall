@@ -6,7 +6,7 @@ import { format, parse } from 'fast-csv';
 type RowType = {
   checksum: string,
   timestamp: number,
-  success: boolean,
+  success: number,
   recall: number,
   prevChecksum: string,
 };
@@ -141,9 +141,9 @@ class History {
       const checksum = card.checksums[0];
       // Update card history
       if (!cards[checksum]) cards[checksum] = [];
-      cards[checksum].push({ timestamp: this.timestampToday(), success: Math.floor(card.success), recall: card.recall});
+      cards[checksum].push({ timestamp: this.timestampToday(), success: card.success, recall: card.recall});
 
-      let csvData = [checksum, Math.floor(card.success), card.recall];
+      let csvData = [checksum, card.success, card.recall];
       if (origChecksum) csvData.push(origChecksum, origTimestamp);
       // console.log('Writing card to log', card, csvData);
   
