@@ -7,6 +7,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 var edn = require('edn-data/stream');
 var unzipper = require('unzipper');
+import Config from '../config';
 import Utils from '../utils';
 import { open as openWebview } from '../views/webview';
 
@@ -130,10 +131,35 @@ function openSettings () {
   vscode.commands.executeCommand('workbench.action.openWorkspaceSettings');
 }
 
+function configureExtraCss () {
+  const config = Config(null);
+  let extraCssArray = [];
+  extraCssArray = config.get('extraCss');
+
+  let quickPickOptions = [];
+  vscode.extensions.all.forEach((e) => {
+    if (e.packageJSON.contributes) {
+      let previewStyles = e.packageJSON.contributes['markdown.previewStyles'] || [];
+      if (previewStyles.length) {
+        previewStyles.forEach(extraCss => {
+          const label = path.join(e.id, extraCss);
+          const localPath = path.join(`{{${e.id}}}`, extraCss);
+          quickPickOptions.push({ label, localPath, picked: extraCssArray.indexOf(localPath) >= 0 })
+        });
+      }
+    }
+  });
+
+  // Show quick pick with preselected items from the configuration
+  vscode.window.showQuickPick(quickPickOptions, { canPickMany: true })
+    .then(selectedOptions => {
+      if (selectedOptions) config.update('extraCss', selectedOptions.map(x => x.localPath), vscode.ConfigurationTarget.Workspace);
+    });
+}
 
 /* EXPORT */
 
 export {
   createCommandUrl, startRecall, startFileReview, convertMochiJSON, convertMochiExport, editFile,
-  findChecksums, archiveCard, logCardToConsole, openSettings
+  findChecksums, archiveCard, logCardToConsole, openSettings, configureExtraCss
 };

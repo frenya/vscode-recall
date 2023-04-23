@@ -2,6 +2,12 @@
 
 All notable changes to the "vscode-recall" extension will be documented in this file.
 
+## v0.12.0
+2021-06-30
+
+* Added the option to include CSS styling from other extensions
+* Added hotkey for the Struggled command
+
 ## v0.11.0
 2021-03-28
 

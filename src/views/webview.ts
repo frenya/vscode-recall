@@ -12,6 +12,8 @@ import { decorationBadgePath } from '../decorators';
 
 import { ARCHIVE_RECALL, RESULT_FAIL, RESULT_STRUGGLE, RESULT_SUCCESS } from '../utils/embedded/providers/js';
 
+let extraCssArray = [];
+
 async function open (filePath?: string) {
 
   // Only allow one instance to exist
@@ -28,6 +30,16 @@ async function open (filePath?: string) {
     }
   }
 
+  // Get extra CSS style paths
+  const config = Config(null);
+  extraCssArray = config.get('extraCss') || [];
+
+  extraCssArray = extraCssArray.map(extraCss => extraCss.replace(/\{\{(.*)\}\}/, (match, p1) => {
+    return vscode.extensions.getExtension(p1).extensionPath;
+  }));
+
+  const extraCssRoots = extraCssArray.map(extraCss => vscode.Uri.file(path.dirname(extraCss)));
+
   // Create and show panel
   const panel = vscode.window.createWebviewPanel(
     'recallTest',
@@ -35,7 +47,10 @@ async function open (filePath?: string) {
     vscode.ViewColumn.One,
     {
       // Only allow the webview to access resources in our extension's media directory
-      //localResourceRoots: [vscode.Uri.file(path.join(Utils.context.extensionPath, 'src', 'views'))],
+      localResourceRoots: [
+        vscode.Uri.file(path.join(Utils.context.extensionPath, 'resources')),
+        ...extraCssRoots
+      ],
       // Enable scripts in the webview
       enableScripts: true,
       enableCommandUris: true,
@@ -59,7 +74,6 @@ async function open (filePath?: string) {
   let currentCard = null, pagesShown = 1;
 
   // Get new card limits from configuration
-  const config = Config(null);
   let newCardCounter:number = config.get('newCardLimit') || Number.MAX_SAFE_INTEGER, skipNewCardCount = 0;
 
   // Ignore the limit when testing a single file
@@ -255,18 +269,22 @@ function cssUrl (panel, fileName) {
   return panel.webview.asWebviewUri(onDiskPath);
 }
 
+function extraCssLinks (panel, extraCssArray) {
+  return extraCssArray.map(extraCss => `<link rel="stylesheet" type="text/css" href="${panel.webview.asWebviewUri(vscode.Uri.file(extraCss))}">`);
+}
+
 async function getWebviewContent(panel, fallbackMessage, card, pagesShown = 1) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    ${extraCssLinks(panel, extraCssArray).join('')}
     <link rel="stylesheet" type="text/css" href="${cssUrl(panel, 'card.css')}">
-    <link rel="stylesheet" type="text/css" href="${cssUrl(panel, 'github.css')}">
     <title>Recall: Flashcards Test</title>
 </head>
-<body>
-    <div class="container">
+<body class="vscode-body">
+    <div class="container markdown-body" dir="auto">
     ${card ? await renderCard(card, pagesShown) : fallbackMessage}
     </div>
     <script>
@@ -295,6 +313,7 @@ async function getWebviewContent(panel, fallbackMessage, card, pagesShown = 1) {
           else if (e.code === 'KeyF' ) onButtonClick('forgot');
           else if (e.code === 'KeyA' ) onButtonClick('archive');
           else if (e.code === 'KeyN' ) onButtonClick('next');
+          else if (e.code === 'KeyS' ) onButtonClick('struggled');
           else console.log(e);
         };
         window.focus();
@@ -335,7 +354,7 @@ async function renderCard (card, pagesShown) {
     </div>
     <div class="buttons" style="${pagesShown === card.pages.length ? '' : 'display: none;'}">
       <a id="remembered" href="#" class="btn">Remembered (Enter)</a>
-      <a id="struggled" href="#" class="btn">Struggled</a>
+      <a id="struggled" href="#" class="btn">Struggled (S)</a>
       <a id="forgot"   href="#" class="btn">Forgot (F)</a>
     </div>
     <div class="buttons" style="${card.recall >= ARCHIVE_RECALL ? '' : 'display: none;'}">
