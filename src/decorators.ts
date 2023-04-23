@@ -6,6 +6,7 @@ import Consts from './consts';
 import { createCommandUrl } from './commands';
 import Editor from './editor';
 import Utils from './utils';
+import { pathNormalizer } from './utils/embedded/providers/abstract';
 
 const badgeColors = {
   ARCHIVED: 'black',
@@ -18,8 +19,8 @@ const badgeColors = {
 };
 
 export const badgeUrl = (state, scale) => `https://badgen.net/badge/REVERSE/${state}/${badgeColors[state]}?scale=${scale}`;
-export const badgeUrlFile = (state, size) => path.join(Utils.context.extensionPath, 'resources', 'icons', `badge_${state}_${size}.svg`);
-export const badgeUrlReverse = (state, size) => path.join(Utils.context.extensionPath, 'resources', 'icons', `reverse_${state}_${size}.svg`);
+export const badgeUrlFile = (state, size) => vscode.Uri.joinPath(Utils.context.extensionUri, 'resources', 'icons', `badge_${state}_${size}.svg`);
+export const badgeUrlReverse = (state, size) => vscode.Uri.joinPath(Utils.context.extensionUri, 'resources', 'icons', `reverse_${state}_${size}.svg`);
 const standardBadgeSize = 20.0;
 
 const Decorators = {
@@ -50,9 +51,9 @@ const Decorators = {
     Object.keys(badgeColors).forEach(state => {
       this.registerGroupDecorator(state,
         // { after: Object.assign({ contentIconPath: vscode.Uri.parse(badgeUrl(state, badgeScale.toFixed(2))), margin: `0 0 0 ${lineHeight}px` }) });
-        (hiddenBadges.indexOf(state) < 0) ? { after: Object.assign({ contentIconPath: vscode.Uri.parse(badgeUrlFile(state, 13)), margin: `0 0 0 ${lineHeight}px` }) } : {});
+        (hiddenBadges.indexOf(state) < 0) ? { after: Object.assign({ contentIconPath: badgeUrlFile(state, 13), margin: `0 0 0 ${lineHeight}px` }) } : {});
       this.registerGroupDecorator(`ARCHIVED.${state}`,
-        (hiddenBadges.indexOf(state) < 0) ? { after: Object.assign({ contentIconPath: vscode.Uri.parse(badgeUrlReverse(state, 13)), margin: `0 0 0 ${lineHeight}px` }) } : {});
+        (hiddenBadges.indexOf(state) < 0) ? { after: Object.assign({ contentIconPath: badgeUrlReverse(state, 13), margin: `0 0 0 ${lineHeight}px` }) } : {});
       // console.log('Badge url for', `ARCHIVED.${state}`, vscode.Uri.parse(badgeUrl(state, 0.65)).toString());
     });
 
@@ -170,7 +171,7 @@ const Decorators = {
 
     // Parse the content using central parser
     // TODO: Use the invalidateFileContent method (will update fileData as a side-effect)
-    const fileData = Utils.embedded.provider.parseContent(doc.getText(), Utils.embedded.provider.emptyFileData(doc.uri.fsPath));
+    const fileData = Utils.embedded.provider.parseContent(doc.getText(), Utils.embedded.provider.emptyFileData(pathNormalizer(doc.uri.fsPath)));
 
     const cards = await Utils.embedded.provider.getCardsFromFileData(fileData);
     cards.forEach (item => {
@@ -296,11 +297,12 @@ export function decorationBadgePath (item, size) {
   // - non-reverse, archived cards that have a reverse card are ignored
   // - reverse, non-archived cards whose counterpart is archived show dual state
   // - every other card shows its state
+  // FIXME: Duplicate code with function above. Find a way to refactor.
   if (!item.reverseFor || ((item.state === 'ARCHIVED') === item.reverse)) {
-    return badgeUrlFile(item.state, size);
+    return badgeUrlFile(item.state, size).path;
   }
   else if (item.reverse && item.reverseFor && (item.reverseFor.state === 'ARCHIVED')) {
-    return badgeUrlReverse(item.state, size);
+    return badgeUrlReverse(item.state, size).path;
   }
 }
 

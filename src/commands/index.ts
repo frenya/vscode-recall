@@ -10,6 +10,8 @@ var unzipper = require('unzipper');
 import Config from '../config';
 import Utils from '../utils';
 import { open as openWebview } from '../views/webview';
+import { pathNormalizer } from '../utils/embedded/providers/abstract';
+import { decorationBadgeState } from '../decorators';
 
 function startRecall () {
   return openWebview();
@@ -18,7 +20,7 @@ function startRecall () {
 function startFileReview () {
   const doc = vscode.window.activeTextEditor && vscode.window.activeTextEditor.document;
   if (doc && doc.uri.fsPath) {
-    return openWebview(doc.uri.fsPath);
+    return openWebview(pathNormalizer(doc.uri.fsPath));
   }
   else {
     vscode.window.showWarningMessage('No document is currently active!');
@@ -73,7 +75,7 @@ function convertMochiJSON () {
 function processDeck (deck) {
   let deckContent = _.trim(deck.cards.map(generateMarkdownForCard).join('\n\n'));
 
-  if (deckContent) openNewMarkdownDocument(`# ${deck.name}\n\n${deckContent}`);
+  if (deckContent) openNewTextDocument(`# ${deck.name}\n\n${deckContent}`, 'markdown');
 }
 
 function generateMarkdownForCard (card) {
@@ -84,8 +86,8 @@ function generateMarkdownForCard (card) {
   else return `## ${content}`;
 }
 
-function openNewMarkdownDocument (content) {
-  vscode.workspace.openTextDocument({ content, language: 'markdown' })
+function openNewTextDocument (content, language) {
+  vscode.workspace.openTextDocument({ content, language })
     .then((doc: vscode.TextDocument) => vscode.window.showTextDocument(doc, 1, false));
 }
 
@@ -157,9 +159,35 @@ function configureExtraCss () {
     });
 }
 
+function cardStatistics () {
+  const cardProvider = Utils.embedded.provider;
+
+  cardProvider.getCards()
+    .then(cards => {
+      // Add the isDue flag whether card is due
+      cards.forEach(card => card.isDue = cardProvider.isCardDue(card) ? 'Due' : 'Future');
+
+      // Group the cards by file, status and the isDue flag
+      let result = countBy(cards, ['relativePath', card => decorationBadgeState(card) || 'REVERSE', 'isDue']);
+
+      // Show JSON with results in a new document
+      // NOTE: The replace method is just to compact the last level of nesting
+      openNewTextDocument(JSON.stringify( result, null, 2).replace(/\n    (  |(\}))/g, ' $2'), 'json');
+    });
+
+  // NOTE: Inspired by https://gist.github.com/joyrexus/9837596 - genius
+  function countBy(seq, keys) {
+    if (!keys.length) return seq.length;
+    let [ first, ...rest ] = keys;
+    // Group by first key and then run the values through the countBy function recursively
+    let result = _.mapValues(_.groupBy(seq, first), value => countBy(value, rest));
+    return { 'Total cards': seq.length, 'Total due': seq.filter(cardProvider.isCardDue).length, ...result }
+  };
+}
+
 /* EXPORT */
 
 export {
   createCommandUrl, startRecall, startFileReview, convertMochiJSON, convertMochiExport, editFile,
-  findChecksums, archiveCard, logCardToConsole, openSettings, configureExtraCss
+  findChecksums, archiveCard, logCardToConsole, openSettings, configureExtraCss, cardStatistics
 };

@@ -40,15 +40,21 @@ async function open (filePath?: string) {
 
   const extraCssRoots = extraCssArray.map(extraCss => vscode.Uri.file(path.dirname(extraCss)));
 
+  const workspaceFolderUris = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders.map(x => x.uri) : [];
+
   // Create and show panel
   const panel = vscode.window.createWebviewPanel(
     'recallTest',
     'Recall: Flashcards Test',
     vscode.ViewColumn.One,
     {
-      // Only allow the webview to access resources in our extension's media directory
+      // Allow the webview to access resources in ...
       localResourceRoots: [
-        vscode.Uri.file(path.join(Utils.context.extensionPath, 'resources')),
+        // ... our extension's media directory
+        vscode.Uri.joinPath(Utils.context.extensionUri, 'resources'),
+        // ... all the folders of the current workspace
+        ...workspaceFolderUris,
+        // ... all the other extensions providing CSS preview styles
         ...extraCssRoots
       ],
       // Enable scripts in the webview
@@ -82,7 +88,7 @@ async function open (filePath?: string) {
   await loadData();
 
   function getNextCard () {
-    const firstCard = _.minBy (_.filter(queue, isCardDue), 'nextReviewDate');
+    const firstCard = _.minBy (_.filter(queue, cardProvider.isCardDue), 'nextReviewDate');
     return firstCard;
   }
 
@@ -183,21 +189,12 @@ async function open (filePath?: string) {
   // Reload the card deck and reset related variables
   async function loadData () {
     const allCards = await cardProvider.getCards(filePath ? filterFn : null);
-    queue = allCards.filter(isCardDue);
+    queue = allCards.filter(cardProvider.isCardDue);
 
     // Status bar counters
     currentCardIndex = 0;
     // let newCardsCount = queue.filter(card => card.recall === 0).length;
     totalCards = queue.length /*- (newCardsCount - Math.min(newCardsCount, newCardCounter)) */;
-  }
-
-  function isCardDue(card) {
-    // Only show reverse cards in case the original has been archived
-    if (card.reverse && card.reverseFor) {
-      if (card.reverseFor.state !== 'ARCHIVED') return false;
-    }
-    
-    return card.nextReviewDate <= Date.now();
   }
 
   // Handle messages from the webview

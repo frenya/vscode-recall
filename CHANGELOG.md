@@ -2,11 +2,24 @@
 
 All notable changes to the "vscode-recall" extension will be documented in this file.
 
+## v0.13.1
+2023-04-22
+
+* Added the recall.cardStatistics command
+
+## v0.13.0
+2022-09-09
+
+* Fixed issues with incorrect paths on Windows
+* Issue #16: Flashcards test of current file does not work
+* Issue #16: Badges not visible in source files
+
 ## v0.12.0
 2021-06-30
 
 * Added the option to include CSS styling from other extensions
 * Added hotkey for the Struggled command
+* Removed hard dependency on Markdown All in One
 
 ## v0.11.0
 2021-03-28

@@ -112,6 +112,7 @@ run the "Recall: Convert Mochi JSON" command.
 - Leave a review on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=frenya.vscode-recall)
 - Check out my [other extensions](https://marketplace.visualstudio.com/publishers/frenya)
 - If you like this extension and want to support it's further development, you can [Buy Me a Coffee](https://www.buymeacoffee.com/frenya)
+- For improved Markdown editing experience, I recommend the [Markdown All in One](https://marketplace.visualstudio.com/items?itemName=yzhang.markdown-all-in-one) extension
 
 
 <!-- a href="https://www.buymeacoffee.com/frenya" target="_blank">

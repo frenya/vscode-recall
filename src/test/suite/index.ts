@@ -41,20 +41,21 @@ export async function run(): Promise<void> {
     include: [ "out/**/*.js" ],
     exclude: [ "out/test/**" ],
   });
+  await nyc.reset();
   await nyc.wrap();
 
-  // Check the modules already loaded and warn in case of race condition
-  // (ideally, at this point the require cache should only contain one file - this module)
-  const myFilesRegex = /vscode-recall\/out/;
-  const filterFn = myFilesRegex.test.bind(myFilesRegex);
-  if (Object.keys(require.cache).filter(filterFn).length > 1) {
-    console.warn('NYC initialized after modules were loaded', Object.keys(require.cache).filter(filterFn));
-  }
+  // Print a warning for any module that should be instrumented and is already loaded,
+  // delete its cache entry and re-require
+  // NOTE: This would not be a good practice for production code (possible memory leaks), but can be accepted for unit tests
+  Object.keys(require.cache).filter(f => nyc.exclude.shouldInstrument(f)).forEach(m => {
+    console.warn('Module loaded before NYC, invalidating:', m);
+    delete require.cache[m];
+    require(m);
+  });
 
   // Debug which files will be included/excluded
   // console.log('Glob verification', await nyc.exclude.glob(nyc.cwd));
 
-  await nyc.createTempDirectory();
 	// Create the mocha test
 	const mocha = new Mocha({
 		ui: 'tdd',

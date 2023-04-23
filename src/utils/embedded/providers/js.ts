@@ -155,6 +155,15 @@ class JS extends Abstract {
     return fileData;
   }
 
+  isCardDue(card) {
+    // Only show reverse cards in case the original has been archived
+    if (card.reverse && card.reverseFor) {
+      if (card.reverseFor.state !== 'ARCHIVED') return false;
+    }
+    
+    return card.nextReviewDate <= Date.now();
+  }
+  
   async getCards (filterFn?: Function) {
     const filesData = await this.getFilesData(filterFn);
 
